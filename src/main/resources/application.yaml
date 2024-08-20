@@ -1,0 +1,19 @@
+server:
+  port: 8080
+  compression:
+    enabled: true
+  shutdown: graceful
+  undertow:
+    url-charset: UTF-8
+spring:
+  main:
+    allow-bean-definition-overriding: true
+    register-shutdown-hook: true
+  webclient:
+    enableRequestLogging: true
+    enableResponseLogging: true
+webclient:
+  alibtrip:
+    app-key: m3unvmt81400
+    app-secret: bTN1bnZtdDgxNDAwPlobXd8Tyt8ZzAoL3tFSFZKZTs
+    corp-id: open12m3unvmt7v47v10IfR_SXM900
