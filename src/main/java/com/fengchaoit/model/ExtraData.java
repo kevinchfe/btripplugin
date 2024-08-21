@@ -33,6 +33,7 @@ public class ExtraData {
     private final int initWeight;
 
     public ExtraData(Builder builder) {
+        this.syncType = builder.syncType;
         this.periodicSync = builder.periodicSync;
         this.dataSourceConfigUiUri = builder.dataSourceConfigUiUri;
         this.initHeight = builder.initHeight;
@@ -44,6 +45,7 @@ public class ExtraData {
     }
 
     public static class Builder {
+        public String syncType;
         /**
          * 定时同步
          */
@@ -60,6 +62,11 @@ public class ExtraData {
          * 初始化的配置窗口内容宽度，最小420，最大840
          */
         private int initWeight;
+
+        public Builder syncType(String syncType) {
+            this.syncType = syncType;
+            return this;
+        }
 
         public Builder periodicSync(boolean periodicSync) {
             this.periodicSync = periodicSync;
