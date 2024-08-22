@@ -1,5 +1,6 @@
 package com.fengchaoit.webclient.feishu.param;
 
+import com.alibaba.fastjson2.JSON;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -20,7 +21,7 @@ public class EventParam {
 
     private String subscribeKey;
     private String packID;
-    private EventContent eventContent;
+    private String eventContent;
 
     private EventParam(Builder builder) {
         this.subscribeKey = builder.subscribeKey;
@@ -31,7 +32,7 @@ public class EventParam {
     public static class Builder {
         private String subscribeKey;
         private String packID;
-        private EventContent eventContent;
+        private String eventContent;
 
         public Builder subscribeKey(String subscribeKey) {
             this.subscribeKey = subscribeKey;
@@ -44,7 +45,7 @@ public class EventParam {
         }
 
         public Builder eventContent(EventContent eventContent) {
-            this.eventContent = eventContent;
+            this.eventContent = JSON.toJSONString(eventContent);
             return this;
         }
 
