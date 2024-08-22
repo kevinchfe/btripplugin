@@ -3,19 +3,18 @@ package com.fengchaoit.controller;
 import com.alibaba.fastjson2.JSONObject;
 import com.fengchaoit.Constant;
 import com.fengchaoit.component.feishu.datasync.model.Field;
-import com.fengchaoit.component.feishu.datasync.model.Result;
 import com.fengchaoit.component.feishu.datasync.model.TableData;
 import com.fengchaoit.component.feishu.datasync.model.TableMeta;
 import com.fengchaoit.entity.Data;
 import com.fengchaoit.entity.Order;
 import com.fengchaoit.entity.PrimaryOrder;
 import com.fengchaoit.model.Meta;
+import com.fengchaoit.model.SyncType;
 import com.fengchaoit.param.TableMetaParam;
-import jakarta.servlet.http.HttpServletRequest;
+import com.fengchaoit.starter.mvc.annotation.ResponseUnWrapper;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Enumeration;
 import java.util.List;
 import java.util.logging.Handler;
 
@@ -37,18 +36,19 @@ public class PluginController {
     }
 
     /**
-     * 获取元数据
+     * 获取插件元数据配置信息
      *
-     * @return 元数据
+     * @return 元数据配置信息
      */
+    @ResponseUnWrapper
     @GetMapping("/meta.json")
     public Meta meta() {
         return Meta.create()
                 .extraData(builder -> {
+                    builder.syncType(SyncType.TRIGGER);
                     builder.dataSourceConfigUiUri("https://ext.baseopendev.com/ext/data-sync-fe-demo/c70fa2864a002386423f26411f21a3c674bc2f9c/index.html");
                     builder.initHeight(300);
                     builder.initWeight(520);
-                    builder.syncType("trigger");
                 })
                 .protocol(builder -> {
                     builder.type("http");
@@ -66,10 +66,10 @@ public class PluginController {
      * @param body 请求对象
      * @return 数据
      */
-    @PostMapping("/table_meta")
-    public Result tableMeta(@RequestBody String body) {
-//        processRequestBody(body);
 
+    @PostMapping("/table_meta")
+    public TableMeta tableMeta(@RequestBody String body) {
+        System.out.println("tableMeta :" + body);
         // 解析参数
         TableMetaParam param = JSONObject.parseObject(body, TableMetaParam.class);
         List<Field> fields = List.of(
@@ -77,8 +77,7 @@ public class PluginController {
                 Field.of("orderName", "订单名称", 1, false, "订单名称"),
                 Field.of("price", "订单价格", 1, false, "订单价格")
         );
-        TableMeta tableMeta = TableMeta.of("测试订单", fields);
-        return Result.success().data(tableMeta).build();
+        return TableMeta.of("测试订单", fields);
     }
 
     /**
@@ -87,7 +86,8 @@ public class PluginController {
      * @return 数据
      */
     @PostMapping("/records")
-    public Result records() {
+    public Data records(@RequestBody String body) {
+        System.out.println("records :" + body);
         TableData.Builder tableDataBuilder = TableData.create().hasMore(false).nextPageToken(String.valueOf(1));
         // 构造返回值
         List<PrimaryOrder> primaryOrders = List.of(
@@ -95,8 +95,7 @@ public class PluginController {
                 PrimaryOrder.of("2", Order.of("2", "订单2", String.valueOf(200))),
                 PrimaryOrder.of("3", Order.of("3", "订单3", String.valueOf(300)))
         );
-        Data data = new Data(String.valueOf(2), false, primaryOrders);
-        return Result.success().data(data).build();
+        return new Data(String.valueOf(2), false, primaryOrders);
     }
 
     /**
@@ -106,14 +105,8 @@ public class PluginController {
      * @return 数据
      */
     @PostMapping("/subscribeOrNot")
-    public Result subscribeOrNot(HttpServletRequest request, @RequestBody String body) {
-        Enumeration<String> headerNames = request.getHeaderNames();
-        while (headerNames.hasMoreElements()) {
-            String name = headerNames.nextElement();
-            System.out.println(name + ":" + request.getHeader(name));
-        }
-        System.out.println("=======================================");
-        System.out.println(body);
+    public void subscribeOrNot(@RequestBody String body) {
+        System.out.println("subscribeOrNot :" + body);
         String params = JSONObject.parseObject(body).getString("params");
         String context = JSONObject.parseObject(body).getString("context");
         String tenantKey = JSONObject.parseObject(context).getString("tenantKey");
@@ -123,7 +116,7 @@ public class PluginController {
 //        String cacheKey = SUBSCRIBE_Prefix + tenantKey;
 
         stringRedisTemplate.opsForValue().set(Constant.CACHE_FEISHU_SUBSCRIBE_KEY, subscribeKey);
-        return Result.success().build();
+        System.out.println("订阅");
     }
 
     /**
@@ -133,7 +126,8 @@ public class PluginController {
      * @return 数据
      */
     @PostMapping("/getRecordByPrimaryKeys")
-    public Result getRecordByPrimaryKeys(@RequestBody String body) {
+    public Data getRecordByPrimaryKeys(@RequestBody String body) {
+        System.out.println("getRecordByPrimaryKeys :" + body);
         // 解析primaryKeys
         String json = JSONObject.parseObject(body).getString("params");
 
@@ -142,8 +136,7 @@ public class PluginController {
                 PrimaryOrder.of("2", Order.of("2", "订单2", String.valueOf(500))),
                 PrimaryOrder.of("3", Order.of("3", "订单3", String.valueOf(600)))
         );
-        Data data = new Data(String.valueOf(2), false, primaryOrders);
-        return Result.success().data(data).build();
+        return new Data(String.valueOf(2), false, primaryOrders);
     }
 
     /**
@@ -206,25 +199,4 @@ public class PluginController {
         // 将tenantKey作为key subscribeKey为值存入redis
         stringRedisTemplate.opsForValue().set(Constant.CACHE_FEISHU_SUBSCRIBE_KEY, subscribeKey);
     }
-
-
-    @PostMapping("/test")
-    public void testReq(@RequestBody String body, HttpServletRequest request) {
-
-        System.out.println("body: " + body);
-        System.out.println("=======================================");
-
-
-        // 获取请求头
-        Enumeration<String> headerNames = request.getHeaderNames();
-
-        while (headerNames.hasMoreElements()) {
-            String name = headerNames.nextElement();
-            System.out.println(name + ":" + request.getHeader(name));
-        }
-
-        // 获取请求体
-        System.out.println(body);
-    }
-
 }

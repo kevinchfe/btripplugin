@@ -12,6 +12,7 @@ spring:
   webclient:
     enableRequestLogging: true
     enableResponseLogging: true
+    enableResponseBodyLogging: true
   data:
     redis:
       host: ${REDIS_HOST}

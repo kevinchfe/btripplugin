@@ -14,7 +14,7 @@ public class ExtraData {
     /**
      * 同步模式 manual-手动同步 ，periodic-定时同步， trigger-事件更新同步(同时会24h全量同步一次兜底保证数据最终一致)
      */
-    private String syncType;
+    private final String syncType;
     /**
      * 定时同步
      */
@@ -63,8 +63,8 @@ public class ExtraData {
          */
         private int initWeight;
 
-        public Builder syncType(String syncType) {
-            this.syncType = syncType;
+        public Builder syncType(SyncType syncType) {
+            this.syncType = syncType.getType();
             return this;
         }
 
