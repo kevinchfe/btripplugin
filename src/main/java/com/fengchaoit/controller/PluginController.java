@@ -66,7 +66,6 @@ public class PluginController {
      * @param body 请求对象
      * @return 数据
      */
-
     @PostMapping("/table_meta")
     public TableMeta tableMeta(@RequestBody String body) {
         System.out.println("tableMeta :" + body);
@@ -111,6 +110,8 @@ public class PluginController {
         String context = JSONObject.parseObject(body).getString("context");
         String tenantKey = JSONObject.parseObject(context).getString("tenantKey");
         String subscribeKey = JSONObject.parseObject(params).getString("subscribeKey");
+        System.out.println("subscribeKey22222 = " + subscribeKey);
+        System.out.println("=======================================");
 
 //        String cacheTenantKey = tenantKey;
 //        String cacheKey = SUBSCRIBE_Prefix + tenantKey;
@@ -199,4 +200,5 @@ public class PluginController {
         // 将tenantKey作为key subscribeKey为值存入redis
         stringRedisTemplate.opsForValue().set(Constant.CACHE_FEISHU_SUBSCRIBE_KEY, subscribeKey);
     }
+
 }

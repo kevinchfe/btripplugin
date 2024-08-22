@@ -35,6 +35,7 @@ public class DwbgSyncSchedule {
     public void syncEvent() {
         List<String> primaryKeys = Arrays.asList("1", "2");
         String subscribeKey = stringRedisTemplate.opsForValue().get(Constant.CACHE_FEISHU_SUBSCRIBE_KEY);
+        System.out.println("subscribeKey = " + subscribeKey);
 
         // 调取连接器监听事件
         EventParam param = new EventParam.Builder()
@@ -53,7 +54,6 @@ public class DwbgSyncSchedule {
                         .build())
                 .build();
         String json = feishuApi.syncEvent(param);
-        log.info("调取连接器监听事件返回结果：{}", json);
     }
 }
 
