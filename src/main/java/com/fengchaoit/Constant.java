@@ -13,5 +13,6 @@ public interface Constant {
     String CACHE_ONE_MINUTES_KEY = "oneminutes";
 
     String CACHE_FEISHU_SUBSCRIBE_KEY = "feishu_subscribe";
+    String CACHE_FEISHU_PACKID_KEY = "feishu_packid";
 
 }

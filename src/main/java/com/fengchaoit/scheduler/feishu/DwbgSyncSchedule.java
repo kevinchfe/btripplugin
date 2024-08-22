@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * 多维表格同步定时任务
@@ -35,17 +36,21 @@ public class DwbgSyncSchedule {
     public void syncEvent() {
         List<String> primaryKeys = Arrays.asList("1", "2");
         String subscribeKey = stringRedisTemplate.opsForValue().get(Constant.CACHE_FEISHU_SUBSCRIBE_KEY);
+        String packID = stringRedisTemplate.opsForValue().get(Constant.CACHE_FEISHU_PACKID_KEY);
         System.out.println("subscribeKey = " + subscribeKey);
+        System.out.println("packID = " + packID);
+
+        String uuid = UUID.randomUUID().toString();
 
         // 调取连接器监听事件
         EventParam param = new EventParam.Builder()
                 .subscribeKey(subscribeKey)
-                .packID("packID")
+                .packID(packID)
                 .eventContent(new EventParam.EventContent.Builder()
                         .schema("1.0")
                         .header(new EventParam.Header.Builder()
                                 .ts(System.currentTimeMillis())
-                                .eventID("eventID")
+                                .eventID(uuid)
                                 .eventType(1)
                                 .build())
                         .event(new EventParam.EventDetail.Builder()

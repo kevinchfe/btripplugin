@@ -74,6 +74,7 @@ public class SignatureFilter implements ExchangeFilterFunction {
 
         String secretKey = "DJ1IbH22daQxoRsy4VfcDRrQnTh";
         String sign = getSign(secretKey, timestamp, nonce, eventContent);
+        System.out.println("sign = " + sign);
         ClientRequest newRequest = ClientRequest.from(request)
                 .header("X-Base-Request-Timestamp", String.valueOf(timestamp))
                 .header("X-Base-Request-Nonce", nonce)

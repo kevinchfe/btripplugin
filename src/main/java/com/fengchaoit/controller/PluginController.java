@@ -109,6 +109,7 @@ public class PluginController {
         String params = JSONObject.parseObject(body).getString("params");
         String context = JSONObject.parseObject(body).getString("context");
         String tenantKey = JSONObject.parseObject(context).getString("tenantKey");
+        String packID = JSONObject.parseObject(context).getString("packID");
         String subscribeKey = JSONObject.parseObject(params).getString("subscribeKey");
         System.out.println("subscribeKey22222 = " + subscribeKey);
         System.out.println("=======================================");
@@ -117,6 +118,7 @@ public class PluginController {
 //        String cacheKey = SUBSCRIBE_Prefix + tenantKey;
 
         stringRedisTemplate.opsForValue().set(Constant.CACHE_FEISHU_SUBSCRIBE_KEY, subscribeKey);
+        stringRedisTemplate.opsForValue().set(Constant.CACHE_FEISHU_PACKID_KEY, packID);
         System.out.println("订阅");
     }
 
