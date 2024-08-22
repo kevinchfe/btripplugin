@@ -68,8 +68,6 @@ public class PluginController {
      */
     @PostMapping("/table_meta")
     public Result tableMeta(@RequestBody String body) {
-//        processRequestBody(body);
-
         // 解析参数
         TableMetaParam param = JSONObject.parseObject(body, TableMetaParam.class);
         List<Field> fields = List.of(
@@ -118,6 +116,8 @@ public class PluginController {
         String context = JSONObject.parseObject(body).getString("context");
         String tenantKey = JSONObject.parseObject(context).getString("tenantKey");
         String subscribeKey = JSONObject.parseObject(params).getString("subscribeKey");
+        System.out.println("subscribeKey22222 = " + subscribeKey);
+        System.out.println("=======================================");
 
 //        String cacheTenantKey = tenantKey;
 //        String cacheKey = SUBSCRIBE_Prefix + tenantKey;
@@ -193,20 +193,6 @@ public class PluginController {
 //        }
 //        return tableDataBuilder.build();
 //    }
-
-    /**
-     * 处理请求体
-     */
-    private void processRequestBody(String body) {
-        String params = JSONObject.parseObject(body).getString("params");
-        String context = JSONObject.parseObject(body).getString("context");
-        String tenantKey = JSONObject.parseObject(context).getString("tenantKey");
-        String subscribeKey = JSONObject.parseObject(params).getString("subscribeKey");
-
-        // 将tenantKey作为key subscribeKey为值存入redis
-        stringRedisTemplate.opsForValue().set(Constant.CACHE_FEISHU_SUBSCRIBE_KEY, subscribeKey);
-    }
-
 
     @PostMapping("/test")
     public void testReq(@RequestBody String body, HttpServletRequest request) {

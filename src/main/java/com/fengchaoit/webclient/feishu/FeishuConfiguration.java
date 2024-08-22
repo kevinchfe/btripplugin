@@ -2,7 +2,6 @@ package com.fengchaoit.webclient.feishu;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.context.annotation.Bean;
-import org.springframework.web.reactive.function.client.WebClient;
 
 /**
  * 飞书配置
@@ -12,7 +11,6 @@ import org.springframework.web.reactive.function.client.WebClient;
  * @since Created in 16:39 2024/8/19
  */
 public class FeishuConfiguration {
-
     /**
      * 定义签名过滤器
      *
