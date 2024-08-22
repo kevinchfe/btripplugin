@@ -1,6 +1,7 @@
 package com.fengchaoit.controller;
 
 import com.alibaba.fastjson2.JSONObject;
+import com.fengchaoit.Constant;
 import com.fengchaoit.component.feishu.datasync.model.Field;
 import com.fengchaoit.component.feishu.datasync.model.Result;
 import com.fengchaoit.component.feishu.datasync.model.TableData;
@@ -10,11 +11,13 @@ import com.fengchaoit.entity.Order;
 import com.fengchaoit.entity.PrimaryOrder;
 import com.fengchaoit.model.Meta;
 import com.fengchaoit.param.TableMetaParam;
+import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Enumeration;
 import java.util.List;
 import java.util.logging.Handler;
-import java.util.stream.Collectors;
 
 /**
  * 飞书插件控制器
@@ -27,8 +30,19 @@ import java.util.stream.Collectors;
 @RequestMapping("/plugin/connector")
 public class PluginController {
 
+    private final StringRedisTemplate stringRedisTemplate;
+
+    public PluginController(StringRedisTemplate stringRedisTemplate) {
+        this.stringRedisTemplate = stringRedisTemplate;
+    }
+
+    /**
+     * 获取元数据
+     *
+     * @return 元数据
+     */
     @GetMapping("/meta.json")
-    public Meta meta(String body) {
+    public Meta meta() {
         return Meta.create()
                 .extraData(builder -> {
                     builder.dataSourceConfigUiUri("https://ext.baseopendev.com/ext/data-sync-fe-demo/c70fa2864a002386423f26411f21a3c674bc2f9c/index.html");
@@ -46,8 +60,16 @@ public class PluginController {
                 .build();
     }
 
+    /**
+     * 获取表字段信息
+     *
+     * @param body 请求对象
+     * @return 数据
+     */
     @PostMapping("/table_meta")
     public Result tableMeta(@RequestBody String body) {
+//        processRequestBody(body);
+
         // 解析参数
         TableMetaParam param = JSONObject.parseObject(body, TableMetaParam.class);
         List<Field> fields = List.of(
@@ -59,6 +81,11 @@ public class PluginController {
         return Result.success().data(tableMeta).build();
     }
 
+    /**
+     * 获取表记录
+     *
+     * @return 数据
+     */
     @PostMapping("/records")
     public Result records() {
         TableData.Builder tableDataBuilder = TableData.create().hasMore(false).nextPageToken(String.valueOf(1));
@@ -79,15 +106,23 @@ public class PluginController {
      * @return 数据
      */
     @PostMapping("/subscribeOrNot")
-    public Result subscribeOrNot(@RequestBody String body) {
+    public Result subscribeOrNot(HttpServletRequest request, @RequestBody String body) {
+        Enumeration<String> headerNames = request.getHeaderNames();
+        while (headerNames.hasMoreElements()) {
+            String name = headerNames.nextElement();
+            System.out.println(name + ":" + request.getHeader(name));
+        }
+        System.out.println("=======================================");
         System.out.println(body);
-        String json = JSONObject.parseObject(body).getString("params");
-        String subscribeKey = JSONObject.parseObject(json).getString("subscribeKey");
-        System.out.println(json);
-        System.out.println(subscribeKey);
+        String params = JSONObject.parseObject(body).getString("params");
+        String context = JSONObject.parseObject(body).getString("context");
+        String tenantKey = JSONObject.parseObject(context).getString("tenantKey");
+        String subscribeKey = JSONObject.parseObject(params).getString("subscribeKey");
 
+//        String cacheTenantKey = tenantKey;
+//        String cacheKey = SUBSCRIBE_Prefix + tenantKey;
 
-        System.out.println("订阅");
+        stringRedisTemplate.opsForValue().set(Constant.CACHE_FEISHU_SUBSCRIBE_KEY, subscribeKey);
         return Result.success().build();
     }
 
@@ -99,18 +134,16 @@ public class PluginController {
      */
     @PostMapping("/getRecordByPrimaryKeys")
     public Result getRecordByPrimaryKeys(@RequestBody String body) {
-
+        // 解析primaryKeys
         String json = JSONObject.parseObject(body).getString("params");
-        System.out.println(json);
 
-
-
-        return Result.success().build();
-    }
-
-    @PostMapping("/space/api/bitable/connector/event")
-    public void syncRecords() {
-
+        List<PrimaryOrder> primaryOrders = List.of(
+                PrimaryOrder.of("1", Order.of("1", "订单1", String.valueOf(400))),
+                PrimaryOrder.of("2", Order.of("2", "订单2", String.valueOf(500))),
+                PrimaryOrder.of("3", Order.of("3", "订单3", String.valueOf(600)))
+        );
+        Data data = new Data(String.valueOf(2), false, primaryOrders);
+        return Result.success().data(data).build();
     }
 
     /**
@@ -160,5 +193,38 @@ public class PluginController {
 //        }
 //        return tableDataBuilder.build();
 //    }
+
+    /**
+     * 处理请求体
+     */
+    private void processRequestBody(String body) {
+        String params = JSONObject.parseObject(body).getString("params");
+        String context = JSONObject.parseObject(body).getString("context");
+        String tenantKey = JSONObject.parseObject(context).getString("tenantKey");
+        String subscribeKey = JSONObject.parseObject(params).getString("subscribeKey");
+
+        // 将tenantKey作为key subscribeKey为值存入redis
+        stringRedisTemplate.opsForValue().set(Constant.CACHE_FEISHU_SUBSCRIBE_KEY, subscribeKey);
+    }
+
+
+    @PostMapping("/test")
+    public void testReq(@RequestBody String body, HttpServletRequest request) {
+
+        System.out.println("body: " + body);
+        System.out.println("=======================================");
+
+
+        // 获取请求头
+        Enumeration<String> headerNames = request.getHeaderNames();
+
+        while (headerNames.hasMoreElements()) {
+            String name = headerNames.nextElement();
+            System.out.println(name + ":" + request.getHeader(name));
+        }
+
+        // 获取请求体
+        System.out.println(body);
+    }
 
 }

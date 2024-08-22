@@ -1,7 +1,10 @@
-package com.fengchaoit.webclient.btrip.param.feishu;
+package com.fengchaoit.webclient.feishu.param;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
+
+import java.util.List;
 
 /**
  * 事件回调参数
@@ -12,6 +15,7 @@ import lombok.Setter;
  */
 @Getter
 @Setter
+@ToString
 public class EventParam {
 
     private String subscribeKey;
@@ -49,10 +53,13 @@ public class EventParam {
         }
     }
 
+    @Getter
+    @Setter
+    @ToString
     public static class EventContent {
         private String schema;
         private Header header;
-        private String event;
+        private EventDetail event;
 
         private EventContent(Builder builder) {
             this.schema = builder.schema;
@@ -63,7 +70,7 @@ public class EventParam {
         public static class Builder {
             private String schema;
             private Header header;
-            private String event;
+            private EventDetail event;
 
             public Builder schema(String schema) {
                 this.schema = schema;
@@ -75,8 +82,8 @@ public class EventParam {
                 return this;
             }
 
-            public Builder event(String event) {
-                this.event = event;
+            public Builder event(EventDetail eventDetail) {
+                this.event = eventDetail;
                 return this;
             }
 
@@ -84,18 +91,69 @@ public class EventParam {
                 return new EventContent(this);
             }
         }
+    }
 
-        public static class Header {
-            private long ts;
-            private String eventID;
-            private int eventType;
+    @Getter
+    @Setter
+    @ToString
+    public static class EventDetail {
+        private List<String> primaryKeys;
 
-            public Header(long ts, String eventID, int eventType) {
-                this.ts = ts;
-                this.eventID = eventID;
-                this.eventType = eventType;
+        private EventDetail(List<String> primaryKeys) {
+            this.primaryKeys = primaryKeys;
+        }
+
+        public static class Builder {
+            private List<String> primaryKeys;
+
+            public Builder primaryKeys(List<String> primaryKeys) {
+                this.primaryKeys = primaryKeys;
+                return this;
+            }
+
+            public EventDetail build() {
+                return new EventDetail(primaryKeys);
             }
         }
     }
 
+    @Getter
+    @Setter
+    @ToString
+    public static class Header {
+        private long ts;
+        private String eventID;
+        private int eventType;
+
+        private Header(long ts, String eventID, int eventType) {
+            this.ts = ts;
+            this.eventID = eventID;
+            this.eventType = eventType;
+        }
+
+        public static class Builder {
+            private long ts;
+            private String eventID;
+            private int eventType;
+
+            public Builder ts(long ts) {
+                this.ts = ts;
+                return this;
+            }
+
+            public Builder eventID(String eventID) {
+                this.eventID = eventID;
+                return this;
+            }
+
+            public Builder eventType(int eventType) {
+                this.eventType = eventType;
+                return this;
+            }
+
+            public Header build() {
+                return new Header(ts, eventID, eventType);
+            }
+        }
+    }
 }

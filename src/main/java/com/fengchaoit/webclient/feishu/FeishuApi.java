@@ -1,7 +1,8 @@
 package com.fengchaoit.webclient.feishu;
 
 import com.fengchaoit.starter.webclient.WebClient;
-import com.fengchaoit.webclient.btrip.param.feishu.EventParam;
+import com.fengchaoit.webclient.feishu.param.EventParam;
+import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.service.annotation.PostExchange;
 
@@ -12,10 +13,10 @@ import org.springframework.web.service.annotation.PostExchange;
  * @version 1.0
  * @since Created in 下午5:54 2024/8/20
  */
-@WebClient(url = "https://open.feishu.cn/open-apis")
+@Service
+@WebClient(url = "https://m45he5vd5s.feishu.cn", configuration = FeishuConfiguration.class)
 public interface FeishuApi {
 
     @PostExchange(value = "/space/api/bitable/connector/event")
-    void syncEvent(@RequestBody EventParam body);
-
+    String syncEvent(@RequestBody EventParam body);
 }
