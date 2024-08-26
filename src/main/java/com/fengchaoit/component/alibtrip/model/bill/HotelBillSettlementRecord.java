@@ -23,14 +23,14 @@ public class HotelBillSettlementRecord extends SettlementRecord {
      * 入住时间
      */
     @JsonProperty("check_in_date")
-    @TableField(fieldName = "入住时间", description = "入住时间")
+    @TableField(fieldName = "入住时间", description = "入住时间", fieldType = 5)
     private String checkInDate;
 
     /**
      * 离店时间
      */
     @JsonProperty("check_out_date")
-    @TableField(fieldName = "离店时间", description = "离店时间")
+    @TableField(fieldName = "离店时间", description = "离店时间", fieldType = 5)
     private String checkOutDate;
 
     /**
@@ -63,21 +63,21 @@ public class HotelBillSettlementRecord extends SettlementRecord {
     /**
      * 房间序号
      */
-    @TableField(fieldName = "房间序号", description = "房间序号")
+    @TableField(fieldName = "房间序号", description = "房间序号", fieldType = 2)
     @JsonProperty("room_number")
-    private String roomNumber;
+    private Integer roomNumber;
 
     /**
      * 入住天数
      */
-    @TableField(fieldName = "入住天数", description = "入住天数")
+    @TableField(fieldName = "入住天数", description = "入住天数", fieldType = 2)
     @JsonProperty("nights")
     private Integer nights;
 
     /**
      * 总间夜数
      */
-    @TableField(fieldName = "总间夜数", description = "总间夜数")
+    @TableField(fieldName = "总间夜数", description = "总间夜数", fieldType = 2)
     @JsonProperty("total_nights")
     private Integer totalNights;
 
@@ -91,64 +91,64 @@ public class HotelBillSettlementRecord extends SettlementRecord {
     /**
      * 订单金额
      */
-    @TableField(fieldName = "订单金额", description = "订单金额")
+    @TableField(fieldName = "订单金额", description = "订单金额", fieldType = 8)
     @JsonProperty("order_price")
-    private Double orderPrice;
+    private BigDecimal orderPrice;
 
     /**
      * 企业支付金额
      */
-    @TableField(fieldName = "企业支付金额", description = "企业支付金额")
+    @TableField(fieldName = "企业支付金额", description = "企业支付金额", fieldType = 8)
     @JsonProperty("corp_total_fee")
-    private Double corpTotalFee;
+    private BigDecimal corpTotalFee;
 
     /**
      * 个人结算费用
      */
-    @TableField(fieldName = "个人结算费用", description = "个人结算费用")
+    @TableField(fieldName = "个人结算费用", description = "个人结算费用", fieldType = 8)
     @JsonProperty("personal_settle_price")
-    private Double personalSettlePrice;
+    private BigDecimal personalSettlePrice;
 
     /**
      * 福豆支付
      */
-    @TableField(fieldName = "福豆支付", description = "福豆支付")
+    @TableField(fieldName = "福豆支付", description = "福豆支付", fieldType = 8)
     @JsonProperty("fu_point_price")
-    private Double fuPointPrice;
+    private BigDecimal fuPointPrice;
 
 
     /**
      * 房价
      */
-    @TableField(fieldName = "房价", description = "房价")
+    @TableField(fieldName = "房价", description = "房价", fieldType = 8)
     @JsonProperty("room_price")
-    private Double roomPrice;
+    private BigDecimal roomPrice;
 
     /**
      * 杂费
      */
-    @TableField(fieldName = "杂费", description = "杂费")
+    @TableField(fieldName = "杂费", description = "杂费", fieldType = 8)
     @JsonProperty("fees")
-    private Double fees;
+    private BigDecimal fees;
 
     /**
      * 企业退款金额
      */
-    @TableField(fieldName = "企业退款金额", description = "企业退款金额")
+    @TableField(fieldName = "企业退款金额", description = "企业退款金额", fieldType = 8)
     @JsonProperty("corp_refund_fee")
     private Double corpRefundFee;
 
     /**
      * 个人退款金额
      */
-    @TableField(fieldName = "个人退款金额", description = "个人退款金额")
+    @TableField(fieldName = "个人退款金额", description = "个人退款金额", fieldType = 8)
     @JsonProperty("personal_refund_fee")
     private Double personalRefundFee;
 
     /**
      * 优惠券
      */
-    @TableField(fieldName = "优惠券", description = "优惠券")
+    @TableField(fieldName = "优惠券", description = "优惠券", fieldType = 8)
     @JsonProperty("promotion_fee")
     private Double promotionFee;
 
@@ -323,7 +323,7 @@ public class HotelBillSettlementRecord extends SettlementRecord {
     /**
      * 保险费
      */
-    @TableField(fieldName = "保险费", description = "保险费")
+    @TableField(fieldName = "保险费", description = "保险费", fieldType = 8)
     @JsonProperty("insurance_price")
     private BigDecimal insurancePrice;
 
@@ -344,7 +344,7 @@ public class HotelBillSettlementRecord extends SettlementRecord {
     /**
      * 协议价优惠金额
      */
-    @TableField(fieldName = "协议价优惠金额", description = "协议价优惠金额")
+    @TableField(fieldName = "协议价优惠金额", description = "协议价优惠金额", fieldType = 8)
     @JsonProperty("agreement_promotion_fee")
     private BigDecimal agreementPromotionFee;
 

@@ -22,7 +22,7 @@ public class CarBillSettlementRecord extends SettlementRecord {
     /**
      * 出发日期
      */
-    @TableField(fieldName = "出发日期", description = "出发日期")
+    @TableField(fieldName = "出发日期", description = "出发日期", fieldType = 5)
     @JsonProperty("dept_date")
     private String deptDate;
 
@@ -36,7 +36,7 @@ public class CarBillSettlementRecord extends SettlementRecord {
     /**
      * 到达日期
      */
-    @TableField(fieldName = "到达日期", description = "到达日期")
+    @TableField(fieldName = "到达日期", description = "到达日期", fieldType = 5)
     @JsonProperty("arr_date")
     private String arrDate;
 
@@ -106,35 +106,35 @@ public class CarBillSettlementRecord extends SettlementRecord {
     /**
      * 订单金额
      */
-    @TableField(fieldName = "订单金额", description = "订单金额")
+    @TableField(fieldName = "订单金额", description = "订单金额", fieldType = 8)
     @JsonProperty("order_price")
     private BigDecimal orderPrice;
 
     /**
      * 个人支付金额
      */
-    @TableField(fieldName = "个人支付金额", description = "个人支付金额")
+    @TableField(fieldName = "个人支付金额", description = "个人支付金额", fieldType = 8)
     @JsonProperty("person_settle_fee")
     private BigDecimal personSettleFee;
 
     /**
      * 优惠券
      */
-    @TableField(fieldName = "优惠券", description = "优惠券")
+    @TableField(fieldName = "优惠券", description = "优惠券", fieldType = 8)
     @JsonProperty("coupon")
     private BigDecimal coupon;
 
     /**
      * 预估金额
      */
-    @TableField(fieldName = "预估金额", description = "预估金额")
+    @TableField(fieldName = "预估金额", description = "预估金额", fieldType = 8)
     @JsonProperty("estimate_price")
     private BigDecimal estimatePrice;
 
     /**
      * 商旅优惠金额
      */
-    @TableField(fieldName = "商旅优惠金额", description = "商旅优惠金额")
+    @TableField(fieldName = "商旅优惠金额", description = "商旅优惠金额", fieldType = 8)
     @JsonProperty("coupon_price")
     private BigDecimal couponPrice;
 

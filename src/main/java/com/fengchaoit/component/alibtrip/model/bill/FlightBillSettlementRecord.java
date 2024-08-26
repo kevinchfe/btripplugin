@@ -6,6 +6,8 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
+import java.math.BigDecimal;
+
 /**
  * 机票账单数据
  *
@@ -20,7 +22,7 @@ public class FlightBillSettlementRecord extends SettlementRecord {
     /**
      * 起飞日期
      */
-    @TableField(fieldName = "起飞日期", description = "起飞日期")
+    @TableField(fieldName = "起飞日期", description = "起飞日期", fieldType = 5)
     @JsonProperty("dept_date")
     private String deptDate;
 
@@ -34,7 +36,7 @@ public class FlightBillSettlementRecord extends SettlementRecord {
     /**
      * 到达日期
      */
-    @TableField(fieldName = "到达日期", description = "到达日期")
+    @TableField(fieldName = "到达日期", description = "到达日期", fieldType = 5)
     @JsonProperty("arr_date")
     private String arrDate;
 
@@ -76,13 +78,14 @@ public class FlightBillSettlementRecord extends SettlementRecord {
     /**
      * 到达机场三字码
      */
+    @TableField(fieldName = "到达机场三字码", description = "到达机场三字码")
     @JsonProperty("arr_airport_code")
     private String arrAirportCode;
 
     /**
      * 到达机场名称
      */
-    @TableField(fieldName = "到达机场", description = "到达机场", order = 13)
+    @TableField(fieldName = "到达机场名称", description = "到达机场名称", order = 13)
     @JsonProperty("arr_station")
     private String arrStation;
 
@@ -96,8 +99,8 @@ public class FlightBillSettlementRecord extends SettlementRecord {
     /**
      * 航空公司二字码
      */
-    @JsonProperty("airline_corp_code")
     @TableField(fieldName = "航空公司二字码", description = "航空公司二字码")
+    @JsonProperty("airline_corp_code")
     private String airlineCorpCode;
 
     /**
@@ -130,71 +133,71 @@ public class FlightBillSettlementRecord extends SettlementRecord {
     /**
      * 订单金额
      */
-    @TableField(fieldName = "订单金额", description = "订单金额")
+    @TableField(fieldName = "订单金额", description = "订单金额", fieldType = 8)
     @JsonProperty("corp_pay_order_fee")
-    private Double corpPayOrderFee;
+    private BigDecimal corpPayOrderFee;
 
     /**
      * 销售价
      */
-    @TableField(fieldName = "销售价", description = "销售价")
+    @TableField(fieldName = "销售价", description = "销售价", fieldType = 8)
     @JsonProperty("seal_price")
-    private Double sealPrice;
+    private BigDecimal sealPrice;
 
     /**
      * 基建费
      */
-    @TableField(fieldName = "基建费", description = "基建费")
+    @TableField(fieldName = "基建费", description = "基建费", fieldType = 8)
     @JsonProperty("build_fee")
-    private Double buildFee;
+    private BigDecimal buildFee;
 
     /**
      * 燃油费
      */
-    @TableField(fieldName = "燃油费", description = "燃油费")
+    @TableField(fieldName = "燃油费", description = "燃油费", fieldType = 8)
     @JsonProperty("oil_fee")
-    private Double oilFee;
+    private BigDecimal oilFee;
 
     /**
      * 保险费
      */
     @JsonProperty("insurance_fee")
-    @TableField(fieldName = "保险费", description = "保险费")
-    private Double insuranceFee;
+    @TableField(fieldName = "保险费", description = "保险费", fieldType = 8)
+    private BigDecimal insuranceFee;
 
     /**
      * 改签手续费
      */
     @JsonProperty("change_fee")
-    @TableField(fieldName = "改签手续费", description = "改签手续费")
-    private Double changeFee;
+    @TableField(fieldName = "改签手续费", description = "改签手续费", fieldType = 8)
+    private BigDecimal changeFee;
 
     /**
      * 改签差价
      */
     @JsonProperty("upgrade_cost")
-    @TableField(fieldName = "改签差价", description = "改签差价")
-    private Double upgradeCost;
+    @TableField(fieldName = "改签差价", description = "改签差价", fieldType = 8)
+    private BigDecimal upgradeCost;
 
     /**
      * 退票手续费
      */
     @JsonProperty("refund_fee")
-    @TableField(fieldName = "退票手续费", description = "退票手续费")
-    private Double refundFee;
+    @TableField(fieldName = "退票手续费", description = "退票手续费", fieldType = 8)
+    private BigDecimal refundFee;
 
     /**
      * 改签退票手续费
      */
     @JsonProperty("refund_upgrade_cost")
-    @TableField(fieldName = "改签退票手续费", description = "改签退票手续费")
-    private Double refundUpgradeCost;
+    @TableField(fieldName = "改签退票手续费", description = "改签退票手续费", fieldType = 8)
+    private BigDecimal refundUpgradeCost;
 
     /**
      * 优惠券
      */
-    @TableField(fieldName = "优惠券", description = "优惠券")
-    private Double coupon;
+    @TableField(fieldName = "优惠券", description = "优惠券", fieldType = 8)
+    private BigDecimal coupon;
 
     /**
      * 折扣率
@@ -206,15 +209,15 @@ public class FlightBillSettlementRecord extends SettlementRecord {
      * 商旅价优惠金额
      */
     @JsonProperty("btrip_coupon_fee")
-    @TableField(fieldName = "商旅价优惠金额", description = "商旅价优惠金额")
-    private Double btripCouponFee;
+    @TableField(fieldName = "商旅价优惠金额", description = "商旅价优惠金额", fieldType = 8)
+    private BigDecimal btripCouponFee;
 
     /**
      * 协议价优惠金额
      */
     @JsonProperty("negotiation_coupon_fee")
-    @TableField(fieldName = "协议价优惠金额", description = "协议价优惠金额")
-    private Double negotiationCouponFee;
+    @TableField(fieldName = "协议价优惠金额", description = "协议价优惠金额", fieldType = 8)
+    private BigDecimal negotiationCouponFee;
 
     /**
      * 提前预定天数
@@ -227,14 +230,15 @@ public class FlightBillSettlementRecord extends SettlementRecord {
      * 低价航班价格
      */
     @JsonProperty("most_price")
-    @TableField(fieldName = "低价航班价格", description = "低价航班价格")
+    @TableField(fieldName = "低价航班价格", description = "低价航班价格", fieldType = 2)
     private Double mostPrice;
+
     /**
      * 低价提醒(与最低价差额)
      */
     @JsonProperty("most_difference_price")
-    @TableField(fieldName = "低价提醒(与最低价差额)", description = "低价提醒(与最低价差额)")
-    private Double mostDifferencePrice;
+    @TableField(fieldName = "低价提醒(与最低价差额)", description = "低价提醒(与最低价差额)", fieldType = 8)
+    private BigDecimal mostDifferencePrice;
 
     /**
      * 低价提醒(航班号)
@@ -281,8 +285,8 @@ public class FlightBillSettlementRecord extends SettlementRecord {
      * 行程单金额
      */
     @JsonProperty("itinerary_price")
-    @TableField(fieldName = "行程单金额", description = "行程单金额")
-    private Double itineraryPrice;
+    @TableField(fieldName = "行程单金额", description = "行程单金额", fieldType = 8)
+    private BigDecimal itineraryPrice;
 
     /**
      * 审批扩展自定义字段
@@ -357,16 +361,16 @@ public class FlightBillSettlementRecord extends SettlementRecord {
     /**
      * 企业支付金额
      */
-    @TableField(fieldName = "企业支付金额", description = "企业支付金额")
+    @TableField(fieldName = "企业支付金额", description = "企业支付金额", fieldType = 8)
     @JsonProperty("corp_settle_price")
-    private Double corpSettlePrice;
+    private BigDecimal corpSettlePrice;
 
     /**
      * 个人支付金额
      */
-    @TableField(fieldName = "个人支付金额", description = "个人支付金额")
+    @TableField(fieldName = "个人支付金额", description = "个人支付金额", fieldType = 8)
     @JsonProperty("person_settle_price")
-    private Double personSettlePrice;
+    private BigDecimal personSettlePrice;
 
     /**
      * 行程起始城市机场三字码

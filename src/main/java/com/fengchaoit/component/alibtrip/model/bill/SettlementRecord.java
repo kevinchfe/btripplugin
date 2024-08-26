@@ -6,6 +6,8 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
+import java.math.BigDecimal;
+
 /**
  * 记账记录
  *
@@ -27,7 +29,7 @@ public class SettlementRecord {
     /**
      * 入账状态 0、待入账  1、已入账  -1、个人支付不入账
      */
-    @TableField(fieldName = "入账状态", description = "入账状态")
+    @TableField(fieldName = "入账状态", description = "入账状态", fieldType = 2)
     @JsonProperty("status")
     private Integer status;
 
@@ -48,29 +50,29 @@ public class SettlementRecord {
     /**
      * 结算金额
      */
-    @TableField(fieldName = "结算金额", description = "结算金额")
+    @TableField(fieldName = "结算金额", description = "结算金额", fieldType = 8)
     @JsonProperty("settlement_fee")
-    private String settlementFee;
+    private BigDecimal settlementFee;
 
     /**
      * 结算金额--预存赠送部分
      */
-    @TableField(fieldName = "结算金额--预存赠送部分", description = "结算金额--预存赠送部分")
+    @TableField(fieldName = "结算金额--预存赠送部分", description = "结算金额--预存赠送部分", fieldType = 8)
     @JsonProperty("settlement_grant_fee")
-    private Double settlementGrantFee;
+    private BigDecimal settlementGrantFee;
 
     /**
      * 服务费
      */
-    @TableField(fieldName = "服务费", description = "服务费")
+    @TableField(fieldName = "服务费", description = "服务费", fieldType = 8)
     @JsonProperty("service_fee")
-    private String serviceFee;
+    private BigDecimal serviceFee;
 
     /**
      * 主键 id，遇到相同 id，已最新为准（数据会更新）
      */
     @JsonProperty("primary_id")
-    @TableField(fieldName = "主键 id", description = "主键 id")
+    @TableField(fieldName = "主键 id", description = "主键 id", fieldType = 2)
     private Long primaryId;
 
     /**
@@ -252,7 +254,7 @@ public class SettlementRecord {
     /**
      * 票据类型
      */
-    @TableField(fieldName = "票据类型", description = "票据类型")
+    @TableField(fieldName = "票据类型", description = "票据类型", fieldType = 2)
     @JsonProperty("voucher_type")
     private String voucherType;
 

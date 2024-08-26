@@ -22,7 +22,7 @@ public class TrainBillSettlementRecord extends SettlementRecord {
     /**
      * 发车日期
      */
-    @TableField(fieldName = "发车日期", description = "发车日期")
+    @TableField(fieldName = "发车日期", description = "发车日期", fieldType = 5)
     @JsonProperty("dept_date")
     private String deptDate;
 
@@ -36,7 +36,7 @@ public class TrainBillSettlementRecord extends SettlementRecord {
     /**
      * 到达日期
      */
-    @TableField(fieldName = "到达日期", description = "到达日期")
+    @TableField(fieldName = "到达日期", description = "到达日期", fieldType = 5)
     @JsonProperty("arr_date")
     private String arrDate;
 
@@ -106,28 +106,28 @@ public class TrainBillSettlementRecord extends SettlementRecord {
     /**
      * 订单金额
      */
-    @TableField(fieldName = "订单金额", description = "订单金额")
+    @TableField(fieldName = "订单金额", description = "订单金额", fieldType = 8)
     @JsonProperty("order_price")
     private BigDecimal orderPrice;
 
     /**
      * 票价
      */
-    @TableField(fieldName = "票价", description = "票价")
+    @TableField(fieldName = "票价", description = "票价", fieldType = 8)
     @JsonProperty("ticket_price")
     private BigDecimal ticketPrice;
 
     /**
      * 改签手续费
      */
-    @TableField(fieldName = "改签手续费", description = "改签手续费")
+    @TableField(fieldName = "改签手续费", description = "改签手续费", fieldType = 8)
     @JsonProperty("change_fee")
     private BigDecimal changeFee;
 
     /**
      * 退票手续费
      */
-    @TableField(fieldName = "退票手续费", description = "退票手续费")
+    @TableField(fieldName = "退票手续费", description = "退票手续费", fieldType = 8)
     @JsonProperty("refund_fee")
     private BigDecimal refundFee;
 
@@ -135,7 +135,7 @@ public class TrainBillSettlementRecord extends SettlementRecord {
     /**
      * 优惠券
      */
-    @TableField(fieldName = "优惠券", description = "优惠券")
+    @TableField(fieldName = "优惠券", description = "优惠券", fieldType = 8)
     @JsonProperty("coupon")
     private BigDecimal coupon;
 

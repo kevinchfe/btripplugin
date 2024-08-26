@@ -21,6 +21,26 @@ public @interface TableField {
     String fieldName();
 
     /**
+     * 字段类型
+     *
+     * @return 字段类型
+     * 1：多行文本
+     * 2：数字
+     * 3：单选
+     * 4：多选
+     * 5：日期
+     * 6: 条码
+     * 7：复选框
+     * 8: 货币
+     * 9：电话号码
+     * 10：超链接
+     * 11:  进度
+     * 12:  评分
+     * 13:  地理位置
+     */
+    int fieldType() default 1;
+
+    /**
      * 是否是索引列
      *
      * @return 是否是索引列
@@ -34,5 +54,10 @@ public @interface TableField {
      */
     String description() default "";
 
+    /**
+     * 字段排序
+     *
+     * @return 字段排序
+     */
     int order() default -1;
 }
