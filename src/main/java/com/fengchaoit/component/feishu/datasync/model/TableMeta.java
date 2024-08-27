@@ -3,6 +3,7 @@ package com.fengchaoit.component.feishu.datasync.model;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.ToString;
 
 import java.util.List;
 
@@ -15,10 +16,17 @@ import java.util.List;
  */
 @AllArgsConstructor(staticName = "of")
 @Getter
+@ToString
 public class TableMeta {
+    /**
+     * 表名
+     */
     @JsonProperty(value = "tableName", index = 0)
     private String name;
-
+    /**
+     * 字段名
+     */
     @JsonProperty(value = "fields", index = 1)
     private List<Field> fields;
 }
+

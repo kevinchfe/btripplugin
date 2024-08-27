@@ -3,6 +3,8 @@ package com.fengchaoit.component.feishu.datasync.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 
 /**
  * 表字段信息
@@ -12,6 +14,7 @@ import lombok.Getter;
  * @since Created in 下午2:44 2024/8/20
  */
 @Getter
+@ToString
 public class Field {
     /**
      * 字段
@@ -49,6 +52,9 @@ public class Field {
     @JsonProperty("description")
     private String description;
 
+    @JsonIgnore
+    @Setter
+    private int order = 100;
 
     private Field(String id, String name, Integer type, boolean primary, String description) {
         this.id = id;

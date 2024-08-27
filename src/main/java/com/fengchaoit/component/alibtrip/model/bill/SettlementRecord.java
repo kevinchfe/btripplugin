@@ -2,6 +2,7 @@ package com.fengchaoit.component.alibtrip.model.bill;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fengchaoit.component.feishu.datasync.annotation.TableField;
+import com.fengchaoit.component.feishu.datasync.model.PrimaryKey;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -18,7 +19,7 @@ import java.math.BigDecimal;
 @Getter
 @Setter
 @ToString
-public class SettlementRecord {
+public class SettlementRecord implements PrimaryKey {
     /**
      * 订单号
      */
@@ -78,7 +79,7 @@ public class SettlementRecord {
     /**
      * 序号
      */
-    @TableField(fieldName = "序号", description = "序号")
+    @TableField(fieldName = "序号", description = "序号", primary = true)
     private String index;
 
     /**
@@ -258,4 +259,8 @@ public class SettlementRecord {
     @JsonProperty("voucher_type")
     private String voucherType;
 
+    @Override
+    public String primary() {
+        return String.valueOf(index);
+    }
 }

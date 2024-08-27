@@ -4,7 +4,7 @@ import com.fengchaoit.component.alibtrip.model.bill.*;
 import com.fengchaoit.component.alibtrip.param.BillSettlementParam;
 import com.fengchaoit.starter.webclient.WebClient;
 import com.fengchaoit.webclient.btrip.model.CorpToken;
-import com.fengchaoit.webclient.btrip.model.Result;
+import com.fengchaoit.webclient.Result;
 import com.fengchaoit.webclient.btrip.model.order.FlightOrder;
 import com.fengchaoit.webclient.btrip.param.CorpTokenParam;
 import com.fengchaoit.webclient.btrip.param.order.FlightOrderListQueryParam;
@@ -42,7 +42,7 @@ public interface AliBtripApi {
      * @return 结果集
      */
     @GetExchange(value = "/flight/v1/bill-settlement")
-    Result<BillSettlement<FlightBillSettlementRecord>> flightBillSettlement(@RequestParam BillSettlementParam param);
+    Result<BillSettlement<FlightBillSettlementRecord>> flightBillSettlement(@RequestBody BillSettlementParam param);
 
     /**
      * 酒店账单结果
@@ -51,7 +51,7 @@ public interface AliBtripApi {
      * @return 结果集
      */
     @GetExchange(value = "/hotel/v1/bill-settlement")
-    Result<BillSettlement<HotelBillSettlementRecord>> hotelBillSettlement(@RequestParam BillSettlementParam param);
+    Result<BillSettlement<HotelBillSettlementRecord>> hotelBillSettlement(@RequestBody BillSettlementParam param);
 
     /**
      * 火车账单结果
@@ -60,7 +60,7 @@ public interface AliBtripApi {
      * @return 结果集
      */
     @GetExchange(value = "/train/v1/bill-settlement")
-    Result<BillSettlement<TrainBillSettlementRecord>> trainBillSettlement(@RequestParam BillSettlementParam param);
+    Result<BillSettlement<TrainBillSettlementRecord>> trainBillSettlement(@RequestBody BillSettlementParam param);
 
     /**
      * 打车账单结果
@@ -69,7 +69,7 @@ public interface AliBtripApi {
      * @return 结果集
      */
     @GetExchange(value = "/car/v1/bill-settlement")
-    Result<BillSettlement<CarBillSettlementRecord>> carBillSettlement(@RequestParam BillSettlementParam param);
+    Result<BillSettlement<CarBillSettlementRecord>> carBillSettlement(@RequestBody BillSettlementParam param);
 
     /**
      * 机票订单列表查询

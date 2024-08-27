@@ -4,7 +4,7 @@ import com.fengchaoit.exception.BusinessException;
 import com.fengchaoit.utils.DateTimeFormatter;
 import com.fengchaoit.utils.DateTimeUtils;
 import com.fengchaoit.webclient.btrip.model.CorpToken;
-import com.fengchaoit.webclient.btrip.model.Result;
+import com.fengchaoit.webclient.Result;
 import com.fengchaoit.webclient.btrip.param.CorpTokenParam;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;

@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.Getter;
 
+import java.io.Serializable;
+
 /**
  * 账单请求参数
  *
@@ -13,7 +15,7 @@ import lombok.Getter;
  */
 @Builder
 @Getter
-public class BillSettlementParam {
+public class BillSettlementParam implements Serializable {
     /**
      * 记账数据起始时  yyyy-MM-dd(或 yyyy-MM-dd HH:mm:ss)
      */

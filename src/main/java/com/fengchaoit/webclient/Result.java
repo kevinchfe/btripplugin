@@ -1,13 +1,13 @@
-package com.fengchaoit.webclient.btrip.model;
+package com.fengchaoit.webclient;
 
 import lombok.*;
 
 /**
- * 企业token
+ * 请求返回值
  *
- * @author wangchuan
+ * @author chenfei
  * @version 1.0
- * @since Created in 21:56 2024/4/12
+ * @since Created in 上午10:53 2024/8/21
  */
 @Setter
 @Getter

@@ -7,12 +7,9 @@ import com.fengchaoit.component.alibtrip.param.BillSettlementParam;
 import com.fengchaoit.exception.BusinessException;
 import com.fengchaoit.utils.DateTimeFormatter;
 import com.fengchaoit.webclient.btrip.AliBtripApi;
-import com.fengchaoit.webclient.btrip.model.Result;
-import com.fengchaoit.webclient.btrip.model.order.FlightOrder;
-import com.fengchaoit.webclient.btrip.param.order.FlightOrderListQueryParam;
+import com.fengchaoit.webclient.Result;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
@@ -55,7 +52,7 @@ public class AlibtripSchedule {
         // 机票账单处理器
         Instant start = Instant.now();
 
-        BiFunction<AliBtripApi, BillSettlementParam, Result<BillSettlement<FlightBillSettlementRecord>>> flightBillSettlement = AliBtripApi::flightBillSettlement;
+//        BiFunction<AliBtripApi, BillSettlementParam, Result<BillSettlement<FlightBillSettlementRecord>>> flightBillSettlement = AliBtripApi::flightBillSettlement;
 
 //        FetchBillHandler<? extends SettlementRecord> handler = (api, startTime, endTime, pageNo) -> {
 //            return billSettlementQuery(api::flightBillSettlement, startTime, endTime, pageNo, "机票");
@@ -66,15 +63,14 @@ public class AlibtripSchedule {
         // 加一天
         LocalDateTime endTime = startTime.plusDays(1);
 
-        Result<BillSettlement<FlightBillSettlementRecord>> records = aliBtripApi.flightBillSettlement(BillSettlementParam.builder()
-                .periodStart(DateTimeFormatter.dateTimeToString(startTime))
-                .periodEnd(DateTimeFormatter.dateTimeToString(endTime))
-                .pageNo(1)
-                .build()
-        );
+//        Result<BillSettlement<FlightBillSettlementRecord>> records = aliBtripApi.flightBillSettlement(BillSettlementParam.builder()
+//                .periodStart(DateTimeFormatter.dateTimeToString(startTime))
+//                .periodEnd(DateTimeFormatter.dateTimeToString(endTime))
+//                .pageNo(1)
+//                .build()
+//        );
 
-        System.out.println(records);
-
+//        System.out.println(records);
 
 
         // 获取账单
