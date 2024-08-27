@@ -8,6 +8,7 @@ import com.fengchaoit.webclient.btrip.model.Result;
 import com.fengchaoit.webclient.btrip.model.order.FlightOrder;
 import com.fengchaoit.webclient.btrip.param.CorpTokenParam;
 import com.fengchaoit.webclient.btrip.param.order.FlightOrderListQueryParam;
+import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.service.annotation.GetExchange;
@@ -21,6 +22,7 @@ import java.util.List;
  * @version 1.0
  * @since Created in 16:23 2024/8/19
  */
+@Service
 @WebClient(url = "https://btripopen.alibtrip.com/api", configuration = BtripConfiguration.class)
 public interface AliBtripApi {
 

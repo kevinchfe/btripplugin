@@ -1,12 +1,15 @@
 package com.fengchaoit.scheduler.btrip;
 
 import com.fengchaoit.component.alibtrip.model.bill.BillSettlement;
+import com.fengchaoit.component.alibtrip.model.bill.FlightBillSettlementRecord;
 import com.fengchaoit.component.alibtrip.model.bill.SettlementRecord;
 import com.fengchaoit.component.alibtrip.param.BillSettlementParam;
 import com.fengchaoit.exception.BusinessException;
 import com.fengchaoit.utils.DateTimeFormatter;
 import com.fengchaoit.webclient.btrip.AliBtripApi;
 import com.fengchaoit.webclient.btrip.model.Result;
+import com.fengchaoit.webclient.btrip.model.order.FlightOrder;
+import com.fengchaoit.webclient.btrip.param.order.FlightOrderListQueryParam;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -15,6 +18,7 @@ import org.springframework.stereotype.Component;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 
 /**
@@ -28,6 +32,12 @@ import java.util.function.Function;
 @Component
 public class AlibtripSchedule {
 
+    private final AliBtripApi aliBtripApi;
+
+    public AlibtripSchedule(AliBtripApi aliBtripApi) {
+        this.aliBtripApi = aliBtripApi;
+    }
+
     @PostConstruct
     public void init() {
         log.info("阿里商旅订单定时任务初始化");
@@ -36,7 +46,7 @@ public class AlibtripSchedule {
     /**
      * 拉取阿里商旅机票账单
      */
-    @Scheduled(cron = "0/5 * * * * ?")
+//    @Scheduled(cron = "0/5 * * * * ?")
     public void pullFlightBill() {
         log.info("拉取阿里商旅机票账单");
 
@@ -44,20 +54,34 @@ public class AlibtripSchedule {
         Map<String, FetchBillHandler<? extends SettlementRecord>> handlerMap = new HashMap<>();
         // 机票账单处理器
         Instant start = Instant.now();
-        FetchBillHandler<? extends SettlementRecord> handler = (api, startTime, endTime, pageNo) -> {
-            return billSettlementQuery(api::flightBillSettlement, startTime, endTime, pageNo, "机票");
-        };
+
+        BiFunction<AliBtripApi, BillSettlementParam, Result<BillSettlement<FlightBillSettlementRecord>>> flightBillSettlement = AliBtripApi::flightBillSettlement;
+
+//        FetchBillHandler<? extends SettlementRecord> handler = (api, startTime, endTime, pageNo) -> {
+//            return billSettlementQuery(api::flightBillSettlement, startTime, endTime, pageNo, "机票");
+//        };
 
         // 当月第一天
         LocalDateTime startTime = LocalDateTime.now().withDayOfMonth(1).withHour(0).withMinute(0).withSecond(0).withNano(0);
         // 加一天
         LocalDateTime endTime = startTime.plusDays(1);
 
+        Result<BillSettlement<FlightBillSettlementRecord>> records = aliBtripApi.flightBillSettlement(BillSettlementParam.builder()
+                .periodStart(DateTimeFormatter.dateTimeToString(startTime))
+                .periodEnd(DateTimeFormatter.dateTimeToString(endTime))
+                .pageNo(1)
+                .build()
+        );
+
+        System.out.println(records);
+
+
+
         // 获取账单
 //        billSettlementQuery(null, startTime, endTime, 1, "机票");
 
 
-        List<SettlementRecord> records = loadBillRecords(handler, startTime, endTime, 1);
+//        List<SettlementRecord> records = loadBillRecords(handler, startTime, endTime, 1);
         log.info("拉取阿里商旅机票账单耗时：{}ms", Instant.now().toEpochMilli() - start.toEpochMilli());
 
     }
@@ -105,14 +129,13 @@ public class AlibtripSchedule {
      * @return 账单记录
      */
     private <T extends SettlementRecord> List<T> loadBillRecords(FetchBillHandler<T> handler,
-                                                                 AliBtripApi api,
                                                                  LocalDateTime startTime,
                                                                  LocalDateTime endTime,
                                                                  int pageNo) {
-        BillSettlement<? extends T> module = handler.fetchBillHandle(api, startTime, endTime, pageNo);
+        BillSettlement<? extends T> module = handler.fetchBillHandle(startTime, endTime, pageNo);
         List<T> records = new ArrayList<>(module.getRecords());
         if (Objects.nonNull(module.getTotalNum()) && module.getTotalNum() > (pageNo * 100L)) {
-            List<T> nextRecords = loadBillRecords(handler, api, startTime, endTime, pageNo + 1);
+            List<T> nextRecords = loadBillRecords(handler, startTime, endTime, pageNo + 1);
             records.addAll(nextRecords);
         }
         return records;
@@ -130,7 +153,7 @@ public class AlibtripSchedule {
          * @param pageNo    页码
          * @return 账单
          */
-        BillSettlement<? extends T> fetchBillHandle(AliBtripApi api, LocalDateTime startTime, LocalDateTime endTime, int pageNo);
+        BillSettlement<? extends T> fetchBillHandle(LocalDateTime startTime, LocalDateTime endTime, int pageNo);
     }
 
 

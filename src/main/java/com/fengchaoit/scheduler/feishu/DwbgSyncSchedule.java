@@ -5,6 +5,7 @@ import com.fengchaoit.webclient.feishu.FeishuApi;
 import com.fengchaoit.webclient.feishu.param.EventParam;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
@@ -31,7 +32,7 @@ public class DwbgSyncSchedule {
     }
 
 
-    //    @Scheduled(cron = "0/20 * * * * ?")
+//    @Scheduled(cron = "0/20 * * * * ?")
     public void syncEvent() {
         List<String> primaryKeys = Arrays.asList("1", "2");
         String subscribeKey = stringRedisTemplate.opsForValue().get(Constant.CACHE_FEISHU_SUBSCRIBE_KEY);

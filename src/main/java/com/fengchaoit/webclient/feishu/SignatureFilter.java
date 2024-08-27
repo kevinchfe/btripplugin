@@ -68,6 +68,7 @@ public class SignatureFilter implements ExchangeFilterFunction {
             return next.exchange(request);
         }
         String eventContent = getBodyEventContent(bodyJsonOpt.get());
+        System.out.println("eventContent = " + eventContent);
         if (eventContent.isEmpty()) {
             return next.exchange(request);
         }

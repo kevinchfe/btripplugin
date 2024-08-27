@@ -17,6 +17,7 @@ import com.fengchaoit.model.SyncType;
 import com.fengchaoit.param.TableMetaParam;
 import com.fengchaoit.starter.mvc.annotation.ResponseUnWrapper;
 import com.fengchaoit.starter.mvc.vo.Result;
+import com.fengchaoit.webclient.btrip.AliBtripApi;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -39,10 +40,11 @@ import java.util.Objects;
 @RestController
 @RequestMapping("/plugin/connector")
 public class PluginController {
-
+    private final AliBtripApi aliBtripApi;
     private final StringRedisTemplate stringRedisTemplate;
 
-    public PluginController(StringRedisTemplate stringRedisTemplate) {
+    public PluginController(AliBtripApi aliBtripApi, StringRedisTemplate stringRedisTemplate) {
+        this.aliBtripApi = aliBtripApi;
         this.stringRedisTemplate = stringRedisTemplate;
     }
 
@@ -79,9 +81,9 @@ public class PluginController {
      */
     @PostMapping(value = "/table_meta", produces = "application/json; charset=utf-8")
     public Result tableMeta(@RequestBody TableMetaParam param) {
-//        System.out.println("tableMeta :" + body);
-//        // 解析参数
-//        TableMetaParam param = JSONObject.parseObject(body, TableMetaParam.class);
+        System.out.println("tableMeta :" + param);
+        // 解析参数
+//        TableMetaParam params = JSONObject.parseObject(param, TableMetaParam.class);
 //        List<Field> fields = List.of(
 //                Field.of("orderNo", "订单号", 1, true, "订单号"),
 //                Field.of("orderName", "订单名称", 1, false, "订单名称"),
@@ -124,6 +126,7 @@ public class PluginController {
                 PrimaryOrder.of("3", Order.of("3", "订单3", String.valueOf(300)))
         );
         return new Data(String.valueOf(2), false, primaryOrders);
+//        aliBtripApi.
     }
 
     /**
@@ -256,42 +259,6 @@ public class PluginController {
             fields.add(tempTableFieldItem);
         }, field -> AnnotatedElementUtils.isAnnotated(field, TableField.class));
         return fields;
-    }
-
-    /**
-     * 转换字段类型为返回类型
-     * 1：多行文本 2：数字  3：单选 4：多选  5：日期  6: 条码  7：复选框  8: 货币  9：电话号码  10：超链接  11:  进度  12:  评分 13:  地理位置
-     *
-     * @param clazz     字段类型
-     * @param fieldName 特殊字段名称处理
-     * @return 字段类型
-     */
-    private int caseFieldTypeToType(Class<?> clazz, String fieldName) {
-        if (Arrays.asList("tripType", "status", "orderStatus", "hotelSupportVatInvoiceType", "carLevel", "provider",
-                "serviceType", "userConfirm").contains(fieldName)) {
-            return 1;
-        }
-
-        if (StringUtils.equalsAny(fieldName, "checkDataFlags")) {
-            return 4;
-        }
-
-        // 判断是否是BigDecimal
-        if (BigDecimal.class.equals(clazz)) {
-            return 8;
-        }
-
-        // 日期转换
-        if (Arrays.asList("depDate", "retDate", "checkIn", "checkOut", "depTime", "arrTime", "publishTime", "takenTime",
-                "driverConfirmTime", "cancelTime", "payTime", "gmtCreate", "gmtModified").contains(fieldName)) {
-            return 5;
-        }
-
-        if (Number.class.isAssignableFrom(clazz)) {
-            return 2;
-        }
-
-        return 1;
     }
 
     /**

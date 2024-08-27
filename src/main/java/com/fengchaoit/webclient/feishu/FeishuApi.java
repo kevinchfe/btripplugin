@@ -15,7 +15,7 @@ import org.springframework.web.service.annotation.PostExchange;
  */
 @Service
 @WebClient(url = "https://m45he5vd5s.feishu.cn", configuration = FeishuConfiguration.class)
-//@WebClient(url = "http://un5mw8.natappfree.cc", configuration = FeishuConfiguration.class)
+//@WebClient(url = "http://4xset9.natappfree.cc", configuration = FeishuConfiguration.class)
 public interface FeishuApi {
 
     @PostExchange(value = "/space/api/bitable/connector/event")
