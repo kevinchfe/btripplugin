@@ -57,16 +57,16 @@ public class HotelOrder extends Order {
     /**
      * 入住时间
      */
-    @JsonProperty("check_in")
-    @TableField(fieldName = "入住时间", description = "入住时间")
-    private Long checkIn;
-
-    /**
-     * 离店时间
-     */
-    @JsonProperty("check_out")
-    @TableField(fieldName = "离店时间", description = "离店时间")
-    private Long checkOut;
+//    @JsonProperty("check_in")
+//    @TableField(fieldName = "入住时间", description = "入住时间")
+//    private String checkIn;
+//
+//    /**
+//     * 离店时间
+//     */
+//    @JsonProperty("check_out")
+//    @TableField(fieldName = "离店时间", description = "离店时间")
+//    private String checkOut;
 
     /**
      * 房型
@@ -80,14 +80,14 @@ public class HotelOrder extends Order {
      */
     @JsonProperty("room_num")
     @TableField(fieldName = "房间数", description = "房间数")
-    private Integer roomNum;
+    private String roomNum;
 
     /**
      * 总共住几晚
      */
     @JsonProperty("night")
     @TableField(fieldName = "总共住几晚", description = "总共住几晚")
-    private Integer night;
+    private String night;
 
     /**
      * 入住顾客，多个用','分割
@@ -183,7 +183,7 @@ public class HotelOrder extends Order {
      */
     @JsonProperty("cost_center_corp_id")
     @TableField(fieldName = "企业id", description = "企业id")
-    private String  costCenterCorpId;
+    private String costCenterCorpId;
 
     /**
      * 成本中心名称
@@ -217,42 +217,42 @@ public class HotelOrder extends Order {
      * 发票类型
      */
     @JsonProperty("invoice_type")
-    @TableField(fieldName = "发票类型", description = "发票类型")
+    @TableField(fieldName = "发票类型", description = "发票类型", fieldType = 8)
     private String invoiceType;
 
     // 订单价格类目
     // 预订
     @JsonProperty("book")
-    @TableField(fieldName = "预订", description = "预订")
+    @TableField(fieldName = "预订", description = "预订", fieldType = 8)
     private BigDecimal book;
 
     // 酒店服务费
     @JsonProperty("service_fee")
-    @TableField(fieldName = "酒店服务费", description = "酒店服务费")
+    @TableField(fieldName = "酒店服务费", description = "酒店服务费", fieldType = 8)
     private BigDecimal serviceFee;
 
     // 酒店调账
     @JsonProperty("adjustment")
-    @TableField(fieldName = "酒店调账", description = "酒店调账")
+    @TableField(fieldName = "酒店调账", description = "酒店调账", fieldType = 8)
     private BigDecimal adjustment;
 
     // 酒店退款
     @JsonProperty("refund")
-    @TableField(fieldName = "酒店退款", description = "酒店退款")
+    @TableField(fieldName = "酒店退款", description = "酒店退款", fieldType = 8)
     private BigDecimal refund;
 
     // 酒店赔付
     @JsonProperty("compensation")
-    @TableField(fieldName = "酒店赔付", description = "酒店赔付")
+    @TableField(fieldName = "酒店赔付", description = "酒店赔付", fieldType = 8)
     private BigDecimal compensation;
 
     // 福豆抵扣
     @JsonProperty("fudou_deduction")
-    @TableField(fieldName = "福豆抵扣", description = "福豆抵扣")
+    @TableField(fieldName = "福豆抵扣", description = "福豆抵扣", fieldType = 8)
     private BigDecimal fudouDeduction;
 
     // 福豆退款
     @JsonProperty("fudou_refund")
-    @TableField(fieldName = "福豆退款", description = "福豆退款")
+    @TableField(fieldName = "福豆退款", description = "福豆退款", fieldType = 8)
     private BigDecimal fudouRefund;
 }

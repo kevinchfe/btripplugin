@@ -22,9 +22,9 @@ public class CarBillSettlementRecord extends SettlementRecord {
     /**
      * 出发日期
      */
-    @TableField(fieldName = "出发日期", description = "出发日期", fieldType = 5)
-    @JsonProperty("dept_date")
-    private String deptDate;
+//    @TableField(fieldName = "出发日期", description = "出发日期", fieldType = 5)
+//    @JsonProperty("dept_date")
+//    private String deptDate;
 
     /**
      * 出发时间
@@ -36,9 +36,9 @@ public class CarBillSettlementRecord extends SettlementRecord {
     /**
      * 到达日期
      */
-    @TableField(fieldName = "到达日期", description = "到达日期", fieldType = 5)
-    @JsonProperty("arr_date")
-    private String arrDate;
+//    @TableField(fieldName = "到达日期", description = "到达日期", fieldType = 5)
+//    @JsonProperty("arr_date")
+//    private String arrDate;
 
     /**
      * 到达时间
@@ -274,7 +274,7 @@ public class CarBillSettlementRecord extends SettlementRecord {
     /**
      * 司机添加费总额
      */
-    @TableField(fieldName = "司机添加费总额", description = "司机添加费总额")
+    @TableField(fieldName = "司机添加费总额", description = "司机添加费总额", fieldType = 8)
     @JsonProperty("driver_add_fee")
     private BigDecimal driverAddFee;
 

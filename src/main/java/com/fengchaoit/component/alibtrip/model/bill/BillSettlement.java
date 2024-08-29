@@ -2,7 +2,6 @@ package com.fengchaoit.component.alibtrip.model.bill;
 
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fengchaoit.component.feishu.datasync.annotation.TableField;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;

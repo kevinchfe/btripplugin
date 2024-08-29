@@ -291,6 +291,7 @@ public abstract class DateTimeUtils {
      */
     public static long dateTimeToMilliSecond(LocalDateTime localDateTime) {
         Instant instant = dateTimeToInstant(localDateTime);
+        long epochMilli = instant.toEpochMilli();
         return instant.toEpochMilli();
     }
 

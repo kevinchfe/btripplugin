@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Getter;
 import org.springframework.format.annotation.DateTimeFormat;
 
+import java.io.Serializable;
+
 /**
  * 机票订单列表查询参数
  *
@@ -14,9 +16,8 @@ import org.springframework.format.annotation.DateTimeFormat;
  */
 @Builder
 @Getter
-public class FlightOrderListQueryParam {
+public class OrderListQueryParam implements Serializable {
     /**
-     *
      * 三方用户 ID
      */
     @JsonProperty("user_id")
@@ -59,12 +60,14 @@ public class FlightOrderListQueryParam {
     /**
      * 页码
      */
+    @Builder.Default
     @JsonProperty("page")
-    private Integer page;
+    private int page = 1;
 
     /**
      * 每页大小
      */
+    @Builder.Default
     @JsonProperty("page_size")
-    private Integer pageSize;
+    private int pageSize = 100;
 }

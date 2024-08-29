@@ -71,16 +71,16 @@ public class TrainOrder extends Order {
     /**
      * 出发时间
      */
-    @JsonProperty("dep_time")
-    @TableField(fieldName = "出发时间", description = "出发时间", fieldType = 5)
-    private String depTime;
-
-    /**
-     * 到达时间
-     */
-    @JsonProperty("arr_time")
-    @TableField(fieldName = "到达时间", description = "到达时间", fieldType = 5)
-    private String arrTime;
+//    @JsonProperty("dep_time")
+//    @TableField(fieldName = "出发时间", description = "出发时间", fieldType = 5)
+//    private String depTime;
+//
+//    /**
+//     * 到达时间
+//     */
+//    @JsonProperty("arr_time")
+//    @TableField(fieldName = "到达时间", description = "到达时间", fieldType = 5)
+//    private String arrTime;
 
     /**
      * 车次号
@@ -129,7 +129,7 @@ public class TrainOrder extends Order {
      */
     @JsonProperty("ticket_count")
     @TableField(fieldName = "票数", description = "票数")
-    private Integer ticketCount;
+    private String ticketCount;
 
     /**
      * 状态
@@ -150,8 +150,8 @@ public class TrainOrder extends Order {
      * 14：有线下退改。
      */
     @JsonProperty("status")
-    @TableField(fieldName = "状态", description = "状态", fieldType = 2)
-    private String status;
+    @TableField(fieldName = "状态", description = "状态")
+    private Integer status;
 
     /**
      * 第三方项目 id
@@ -280,4 +280,5 @@ public class TrainOrder extends Order {
     @JsonProperty("reversal")
     @TableField(fieldName = "冲正", description = "冲正", fieldType = 8)
     private BigDecimal reversal;
+
 }

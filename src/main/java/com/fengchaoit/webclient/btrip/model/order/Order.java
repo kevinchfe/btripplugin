@@ -15,9 +15,11 @@ import lombok.ToString;
 @Getter
 @Setter
 @ToString
-public class AliBtripOrder {
+public class Order {
 
     @JsonProperty("id")
     private Long id;
+
+
 
 }

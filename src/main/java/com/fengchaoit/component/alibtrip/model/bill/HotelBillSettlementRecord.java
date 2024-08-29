@@ -22,16 +22,16 @@ public class HotelBillSettlementRecord extends SettlementRecord {
     /**
      * 入住时间
      */
-    @JsonProperty("check_in_date")
-    @TableField(fieldName = "入住时间", description = "入住时间", fieldType = 5)
-    private String checkInDate;
-
-    /**
-     * 离店时间
-     */
-    @JsonProperty("check_out_date")
-    @TableField(fieldName = "离店时间", description = "离店时间", fieldType = 5)
-    private String checkOutDate;
+//    @JsonProperty("check_in_date")
+//    @TableField(fieldName = "入住时间", description = "入住时间", fieldType = 5)
+//    private String checkInDate;
+//
+//    /**
+//     * 离店时间
+//     */
+//    @JsonProperty("check_out_date")
+//    @TableField(fieldName = "离店时间", description = "离店时间", fieldType = 5)
+//    private String checkOutDate;
 
     /**
      * 入住城市
@@ -63,23 +63,23 @@ public class HotelBillSettlementRecord extends SettlementRecord {
     /**
      * 房间序号
      */
-    @TableField(fieldName = "房间序号", description = "房间序号", fieldType = 2)
+    @TableField(fieldName = "房间序号", description = "房间序号")
     @JsonProperty("room_number")
-    private Integer roomNumber;
+    private String roomNumber;
 
     /**
      * 入住天数
      */
-    @TableField(fieldName = "入住天数", description = "入住天数", fieldType = 2)
+    @TableField(fieldName = "入住天数", description = "入住天数")
     @JsonProperty("nights")
-    private Integer nights;
+    private String nights;
 
     /**
      * 总间夜数
      */
-    @TableField(fieldName = "总间夜数", description = "总间夜数", fieldType = 2)
+    @TableField(fieldName = "总间夜数", description = "总间夜数")
     @JsonProperty("total_nights")
-    private Integer totalNights;
+    private String totalNights;
 
     /**
      * 订单类型
@@ -232,7 +232,7 @@ public class HotelBillSettlementRecord extends SettlementRecord {
     /**
      * 罚金
      */
-    @TableField(fieldName = "罚金", description = "罚金")
+    @TableField(fieldName = "罚金", description = "罚金", fieldType = 8)
     @JsonProperty("fines")
     private BigDecimal fines;
 

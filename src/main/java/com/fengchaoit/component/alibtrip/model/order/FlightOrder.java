@@ -7,6 +7,7 @@ import lombok.Setter;
 import lombok.ToString;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 /**
  * 机票订单
@@ -58,8 +59,8 @@ public class FlightOrder extends Order {
      * 乘客数量
      */
     @JsonProperty("passenger_count")
-    @TableField(fieldName = "乘客数量", description = "乘客数量", fieldType = 2)
-    private Integer passengerCount;
+    @TableField(fieldName = "乘客数量", description = "乘客数量")
+    private String passengerCount;
 
     /**
      * 改签折扣
@@ -73,7 +74,7 @@ public class FlightOrder extends Order {
      */
     @JsonProperty("dep_date")
     @TableField(fieldName = "出发日期", description = "出发日期", fieldType = 5)
-    private String depDate;
+    private Long depDate;
 
     /**
      * 部门名称
@@ -83,7 +84,6 @@ public class FlightOrder extends Order {
     private String departName;
 
     /**
-     * todo 转换
      * 行程类型
      * 0：单程。
      * 1：往返。
@@ -91,7 +91,7 @@ public class FlightOrder extends Order {
      */
     @JsonProperty("trip_type")
     @TableField(fieldName = "行程类型", description = "行程类型")
-    private String tripType;
+    private Integer tripType;
 
     /**
      * 航班号
@@ -189,7 +189,7 @@ public class FlightOrder extends Order {
      */
     @JsonProperty("ret_date")
     @TableField(fieldName = "到达日期", description = "到达日期", fieldType = 5)
-    private String retDate;
+    private Long retDate;
 
     @JsonProperty("thirdpart_business_id")
     @TableField(fieldName = "用户展示的外部审批单 ID", description = "用户展示的外部审批单 ID")
@@ -212,7 +212,7 @@ public class FlightOrder extends Order {
      */
     @JsonProperty("status")
     @TableField(fieldName = "订单状态", description = "订单状态")
-    private String status;
+    private Integer status;
 
     // 订单价格类目
     // 预订
@@ -284,4 +284,5 @@ public class FlightOrder extends Order {
     @JsonProperty("ticket_service_fee_refund")
     @TableField(fieldName = "机票服务费退款", description = "机票服务费退款", fieldType = 8)
     private BigDecimal ticketServiceFeeRefund;
+
 }

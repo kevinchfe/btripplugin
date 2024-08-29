@@ -22,9 +22,9 @@ public class TrainBillSettlementRecord extends SettlementRecord {
     /**
      * 发车日期
      */
-    @TableField(fieldName = "发车日期", description = "发车日期", fieldType = 5)
-    @JsonProperty("dept_date")
-    private String deptDate;
+//    @TableField(fieldName = "发车日期", description = "发车日期", fieldType = 5)
+//    @JsonProperty("dept_date")
+//    private String deptDate;
 
     /**
      * 发车时间
@@ -36,9 +36,9 @@ public class TrainBillSettlementRecord extends SettlementRecord {
     /**
      * 到达日期
      */
-    @TableField(fieldName = "到达日期", description = "到达日期", fieldType = 5)
-    @JsonProperty("arr_date")
-    private String arrDate;
+//    @TableField(fieldName = "到达日期", description = "到达日期", fieldType = 5)
+//    @JsonProperty("arr_date")
+//    private String arrDate;
 
     /**
      * 到达时间
@@ -219,16 +219,16 @@ public class TrainBillSettlementRecord extends SettlementRecord {
     /**
      * 企业支付金额
      */
-    @TableField(fieldName = "企业支付金额", description = "企业支付金额")
+    @TableField(fieldName = "企业支付金额", description = "企业支付金额", fieldType = 8)
     @JsonProperty("ticket_corp_pay_price")
-    private String ticketCorpPayPrice;
+    private BigDecimal ticketCorpPayPrice;
 
     /**
      * 个人支付金额
      */
-    @TableField(fieldName = "个人支付金额", description = "个人支付金额")
+    @TableField(fieldName = "个人支付金额", description = "个人支付金额", fieldType = 8)
     @JsonProperty("ticket_person_pay_price")
-    private String ticketPersonPayPrice;
+    private BigDecimal ticketPersonPayPrice;
 
     /**
      * 出发城市
@@ -282,7 +282,7 @@ public class TrainBillSettlementRecord extends SettlementRecord {
     /**
      * 票面票价
      */
-    @TableField(fieldName = "票面票价", description = "票面票价")
+    @TableField(fieldName = "票面票价", description = "票面票价", fieldType = 8)
     @JsonProperty("print_ticket_price")
     private BigDecimal printTicketPrice;
 
@@ -303,7 +303,7 @@ public class TrainBillSettlementRecord extends SettlementRecord {
     /**
      * 抢票加速包
      */
-    @TableField(fieldName = "抢票加速包", description = "抢票加速包")
+    @TableField(fieldName = "抢票加速包", description = "抢票加速包", fieldType = 8)
     @JsonProperty("speed_package_fee")
     private BigDecimal speedPackageFee;
 

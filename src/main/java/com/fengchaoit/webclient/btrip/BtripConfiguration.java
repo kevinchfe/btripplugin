@@ -15,11 +15,10 @@ public class BtripConfiguration {
     /**
      * 定义token过滤器
      *
-     * @param props 商旅参数
      * @return 商旅过滤器
      */
     @Bean
-    public BtripTokenFilter btripTokenFilter(AliBtripProperties props) {
-        return new BtripTokenFilter(props.getAppKey(), props.getAppSecret(), props.getCorpId());
+    public BtripTokenFilter btripTokenFilter() {
+        return new BtripTokenFilter();
     }
 }

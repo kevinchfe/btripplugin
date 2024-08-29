@@ -121,8 +121,8 @@ public class CarOrder extends Order {
      * 6：已取消。
      */
     @JsonProperty("order_status")
-    @TableField(fieldName = "订单状态", description = "订单状态", fieldType = 2)
-    private String orderStatus;
+    @TableField(fieldName = "订单状态", description = "订单状态")
+    private Integer orderStatus;
 
     /**
      * 车类型级别
@@ -131,8 +131,8 @@ public class CarOrder extends Order {
      * 3：豪华型。
      */
     @JsonProperty("car_level")
-    @TableField(fieldName = "车类型级别", description = "车类型级别", fieldType = 2)
-    private String carLevel;
+    @TableField(fieldName = "车类型级别", description = "车类型级别")
+    private Integer carLevel;
 
     /**
      * 车辆信息
@@ -152,35 +152,35 @@ public class CarOrder extends Order {
      * 乘客发布用车时间
      */
     @JsonProperty("publish_time")
-    @TableField(fieldName = "乘客发布用车时间", description = "乘客发布用车时间", fieldType = 5)
+    @TableField(fieldName = "乘客发布用车时间", description = "乘客发布用车时间")
     private String publishTime;
 
     /**
      * 乘客上车时间
      */
     @JsonProperty("taken_time")
-    @TableField(fieldName = "乘客上车时间", description = "乘客上车时间", fieldType = 5)
+    @TableField(fieldName = "乘客上车时间", description = "乘客上车时间")
     private String takenTime;
 
     /**
      * 司机到达目的地时间
      */
     @JsonProperty("arrive_time")
-    @TableField(fieldName = "司机到达目的地时间", description = "司机到达目的地时间", fieldType = 5)
+    @TableField(fieldName = "司机到达目的地时间", description = "司机到达目的地时间")
     private String driverConfirmTime;
 
     /**
      * 取消时间
      */
     @JsonProperty("cancel_time")
-    @TableField(fieldName = "取消时间", description = "取消时间", fieldType = 5)
+    @TableField(fieldName = "取消时间", description = "取消时间")
     private String cancelTime;
 
     /**
      * 支付时间
      */
     @JsonProperty("pay_time")
-    @TableField(fieldName = "支付时间", description = "支付时间", fieldType = 5)
+    @TableField(fieldName = "支付时间", description = "支付时间")
     private String payTime;
 
     /**
@@ -188,7 +188,7 @@ public class CarOrder extends Order {
      */
     @JsonProperty("travel_distance")
     @TableField(fieldName = "行驶公里数", description = "行驶公里数")
-    private Double travelDistance;
+    private String travelDistance;
 
     /**
      * 打车服务类型
@@ -197,8 +197,8 @@ public class CarOrder extends Order {
      * 3：快车。
      */
     @JsonProperty("service_type")
-    @TableField(fieldName = "打车服务类型", description = "打车服务类型", fieldType = 2)
-    private String serviceType;
+    @TableField(fieldName = "打车服务类型", description = "打车服务类型")
+    private Integer serviceType;
 
     /**
      * 用车原因
@@ -207,8 +207,8 @@ public class CarOrder extends Order {
      * TRAVEL：差旅。
      * WORK：加班。
      */
-    @JsonProperty("reason")
-    @TableField(fieldName = "用车原因", description = "用车原因", fieldType = 2)
+    @JsonProperty("business_category")
+    @TableField(fieldName = "用车原因", description = "用车原因")
     private String businessCategory;
 
     /**
@@ -254,8 +254,8 @@ public class CarOrder extends Order {
      * 3：系统检查不合理。
      */
     @JsonProperty("user_confirm")
-    @TableField(fieldName = "用户确认状态", description = "用户确认状态", fieldType = 2)
-    private String userConfirm;
+    @TableField(fieldName = "用户确认状态", description = "用户确认状态")
+    private Integer userConfirm;
 
     /**
      * 服务商（可能会有其他服务商的增加）
@@ -265,8 +265,8 @@ public class CarOrder extends Order {
      * 5：阳光。
      */
     @JsonProperty("provider")
-    @TableField(fieldName = "服务商", description = "服务商", fieldType = 2)
-    private String provider;
+    @TableField(fieldName = "服务商", description = "服务商")
+    private Integer provider;
 
     /**
      * 申请单名称

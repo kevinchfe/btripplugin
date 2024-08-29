@@ -7,6 +7,8 @@ import lombok.Setter;
 import lombok.ToString;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 /**
  * 机票账单数据
@@ -22,9 +24,9 @@ public class FlightBillSettlementRecord extends SettlementRecord {
     /**
      * 起飞日期
      */
-    @TableField(fieldName = "起飞日期", description = "起飞日期", fieldType = 5)
-    @JsonProperty("dept_date")
-    private String deptDate;
+//    @TableField(fieldName = "起飞日期", description = "起飞日期", fieldType = 5, order = 4)
+//    @JsonProperty("dept_date")
+//    private String deptDate;
 
     /**
      * 起飞时间
@@ -36,9 +38,9 @@ public class FlightBillSettlementRecord extends SettlementRecord {
     /**
      * 到达日期
      */
-    @TableField(fieldName = "到达日期", description = "到达日期", fieldType = 5)
-    @JsonProperty("arr_date")
-    private String arrDate;
+//    @TableField(fieldName = "到达日期", description = "到达日期", fieldType = 5)
+//    @JsonProperty("arr_date")
+//    private String arrDate;
 
     /**
      * 到达时间
@@ -224,14 +226,14 @@ public class FlightBillSettlementRecord extends SettlementRecord {
      */
     @JsonProperty("advance_day")
     @TableField(fieldName = "提前预定天数", description = "提前预定天数")
-    private Integer advanceDay;
+    private String advanceDay;
 
     /**
      * 低价航班价格
      */
     @JsonProperty("most_price")
-    @TableField(fieldName = "低价航班价格", description = "低价航班价格", fieldType = 2)
-    private Double mostPrice;
+    @TableField(fieldName = "低价航班价格", description = "低价航班价格", fieldType = 8)
+    private BigDecimal mostPrice;
 
     /**
      * 低价提醒(与最低价差额)
@@ -447,7 +449,7 @@ public class FlightBillSettlementRecord extends SettlementRecord {
      */
     @TableField(fieldName = "费用归属部门 id", description = "费用归属部门 id")
     @JsonProperty("payment_department_id")
-    private String payment_department_id;
+    private String paymentDepartmentId;
 
     /**
      * 费用归属部门名称
