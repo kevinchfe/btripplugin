@@ -15,10 +15,7 @@ import com.fengchaoit.component.feishu.datasync.model.PrimaryKey;
 import com.fengchaoit.component.feishu.datasync.model.TableData;
 import com.fengchaoit.component.feishu.datasync.model.TableMeta;
 import com.fengchaoit.config.props.AliBtripProperties;
-import com.fengchaoit.convert.CarOrderConvert;
-import com.fengchaoit.convert.FlightOrderConvert;
-import com.fengchaoit.convert.HotelOrderConvert;
-import com.fengchaoit.convert.TrainOrderConvert;
+import com.fengchaoit.convert.*;
 import com.fengchaoit.entity.Data;
 import com.fengchaoit.entity.Order;
 import com.fengchaoit.entity.PrimaryOrder;
@@ -40,7 +37,6 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -107,22 +103,22 @@ public class PluginController {
             if (category == Constant.FEISHU_BILL) {
                 return switch (type) {
                     case 1 -> {
-                        List<Field> fields = processTableMeta(FlightBillSettlementRecord.class);
-                        TableMeta tableMeta = TableMeta.of( corpName + "机票账单", fields);
+                        List<Field> fields = processTableMeta(FlightBillSettlement.class);
+                        TableMeta tableMeta = TableMeta.of(corpName + "机票账单", fields);
                         yield Result.success().data(tableMeta).build();
                     }
                     case 2 -> {
-                        List<Field> fields = processTableMeta(HotelBillSettlementRecord.class);
+                        List<Field> fields = processTableMeta(HotelBillSettlement.class);
                         TableMeta tableMeta = TableMeta.of(corpName + "酒店账单", fields);
                         yield Result.success().data(tableMeta).build();
                     }
                     case 3 -> {
-                        List<Field> fields = processTableMeta(TrainBillSettlementRecord.class);
-                        TableMeta tableMeta = TableMeta.of( corpName + "火车账单", fields);
+                        List<Field> fields = processTableMeta(TrainBillSettlement.class);
+                        TableMeta tableMeta = TableMeta.of(corpName + "火车账单", fields);
                         yield Result.success().data(tableMeta).build();
                     }
                     case 4 -> {
-                        List<Field> fields = processTableMeta(CarBillSettlementRecord.class);
+                        List<Field> fields = processTableMeta(CarBillSettlement.class);
                         TableMeta tableMeta = TableMeta.of(corpName + "用车账单", fields);
                         yield Result.success().data(tableMeta).build();
                     }
@@ -170,38 +166,69 @@ public class PluginController {
             // api获取数据
             if (category == Constant.FEISHU_BILL) { // 账单
                 LocalDateTime endTime = startTime.plusDays(1);
-                BillSettlement<?> billSettlement;
+                com.fengchaoit.webclient.btrip.model.bill.BillSettlement<?> billSettlement;
                 TableData.Builder tableDataBuilder = TableData.create().hasMore(false);
                 switch (type) {
                     case 1 -> {
                         billSettlement = billSettlementQuery(aliBtripApi::flightBillSettlement,
                                 startTime, endTime, page, pageSize, "机票");
+                        boolean hasMore = billSettlement.getTotalNum() > (long) pageSize * page;
+                        if (hasMore) {
+                            tableDataBuilder.hasMore(true).nextPageToken(String.valueOf(page + 1));
+                        }
+                        List<com.fengchaoit.webclient.btrip.model.bill.FlightBillSettlementRecord> records = (List<com.fengchaoit.webclient.btrip.model.bill.FlightBillSettlementRecord>) billSettlement.getRecords();
+                        List<FlightBillSettlement> dwbgBills = records.stream().map(FlightBillConvert.INSTANCE::convertBtripBillToDwbgBill).toList();
+                        List<Field> fields = processTableMeta(FlightBillSettlement.class);
+                        List<PrimaryKey> items = dwbgBills.stream().map(it -> (PrimaryKey) it).toList();
+                        TableData tableData = processRecordToData(tableDataBuilder, fields, items, category, type);
+                        return Result.success().data(tableData).build();
                     }
                     case 2 -> {
                         billSettlement = billSettlementQuery(aliBtripApi::hotelBillSettlement,
                                 startTime, endTime, page, pageSize, "酒店");
+                        boolean hasMore = billSettlement.getTotalNum() > (long) pageSize * page;
+                        if (hasMore) {
+                            tableDataBuilder.hasMore(true).nextPageToken(String.valueOf(page + 1));
+                        }
+                        List<com.fengchaoit.webclient.btrip.model.bill.HotelBillSettlementRecord> records = (List<com.fengchaoit.webclient.btrip.model.bill.HotelBillSettlementRecord>) billSettlement.getRecords();
+                        List<HotelBillSettlement> dwbgBills = records.stream().map(HotelBillConvert.INSTANCE::convertBtripBillToDwbgBill).toList();
+                        List<Field> fields = processTableMeta(HotelBillSettlement.class);
+                        List<PrimaryKey> items = dwbgBills.stream().map(it -> (PrimaryKey) it).toList();
+                        TableData tableData = processRecordToData(tableDataBuilder, fields, items, category, type);
+                        return Result.success().data(tableData).build();
                     }
                     case 3 -> {
                         billSettlement = billSettlementQuery(aliBtripApi::trainBillSettlement,
                                 startTime, endTime, page, pageSize, "火车");
+                        boolean hasMore = billSettlement.getTotalNum() > (long) pageSize * page;
+                        if (hasMore) {
+                            tableDataBuilder.hasMore(true).nextPageToken(String.valueOf(page + 1));
+                        }
+                        List<com.fengchaoit.webclient.btrip.model.bill.TrainBillSettlementRecord> records = (List<com.fengchaoit.webclient.btrip.model.bill.TrainBillSettlementRecord>) billSettlement.getRecords();
+                        List<TrainBillSettlement> dwbgBills = records.stream().map(TrainBillConvert.INSTANCE::convertBtripBillToDwbgBill).toList();
+                        List<Field> fields = processTableMeta(TrainBillSettlement.class);
+                        List<PrimaryKey> items = dwbgBills.stream().map(it -> (PrimaryKey) it).toList();
+                        TableData tableData = processRecordToData(tableDataBuilder, fields, items, category, type);
+                        return Result.success().data(tableData).build();
                     }
                     case 4 -> {
                         billSettlement = billSettlementQuery(aliBtripApi::carBillSettlement,
                                 startTime, endTime, page, pageSize, "用车");
+                        boolean hasMore = billSettlement.getTotalNum() > (long) pageSize * page;
+                        if (hasMore) {
+                            tableDataBuilder.hasMore(true).nextPageToken(String.valueOf(page + 1));
+                        }
+                        List<com.fengchaoit.webclient.btrip.model.bill.CarBillSettlementRecord> records = (List<com.fengchaoit.webclient.btrip.model.bill.CarBillSettlementRecord>) billSettlement.getRecords();
+                        List<CarBillSettlement> dwbgBills = records.stream().map(CarBillConvert.INSTANCE::convertBtripBillToDwbgBill).toList();
+                        List<Field> fields = processTableMeta(CarBillSettlement.class);
+                        List<PrimaryKey> items = dwbgBills.stream().map(it -> (PrimaryKey) it).toList();
+                        TableData tableData = processRecordToData(tableDataBuilder, fields, items, category, type);
+                        return Result.success().data(tableData).build();
                     }
                     default -> {
                         return Result.fail("未找到对应类型").build();
                     }
                 }
-                // 判断是否有下一页
-                boolean hasMore = billSettlement.getTotalNum() > (long) pageSize * page;
-                if (hasMore) {
-                    tableDataBuilder.hasMore(true).nextPageToken(String.valueOf(page + 1));
-                }
-                List<Field> fields = processTableMeta(billSettlement.getRecords().get(0).getClass());
-                List<PrimaryKey> items = billSettlement.getRecords().stream().map(it -> (PrimaryKey) it).toList();
-                TableData tableData = processRecordToData(tableDataBuilder, fields, items, category, type);
-                return Result.success().data(tableData).build();
             } else { // 订单
                 LocalDateTime endTime = LocalDateTime.now();
                 TableData.Builder tableDataBuilder = TableData.create().hasMore(false);
@@ -550,25 +577,26 @@ public class PluginController {
      * @param <T>
      * @return 账单
      */
-    private <T extends SettlementRecord> BillSettlement<T> billSettlementQuery(Function<BillSettlementParam, com.fengchaoit.webclient.Result<BillSettlement<T>>> func,
-                                                                               LocalDateTime startTime,
-                                                                               LocalDateTime endTime,
-                                                                               int pageNo,
-                                                                               int pageSize,
-                                                                               String desc) {
+    private <T extends com.fengchaoit.webclient.btrip.model.bill.SettlementRecord> com.fengchaoit.webclient.btrip.model.bill.BillSettlement<T> billSettlementQuery(Function<BillSettlementParam, com.fengchaoit.webclient.Result<com.fengchaoit.webclient.btrip.model.bill.BillSettlement<T>>> func,
+                                                                                                                                                                    LocalDateTime startTime,
+                                                                                                                                                                    LocalDateTime endTime,
+                                                                                                                                                                    int pageNo,
+                                                                                                                                                                    int pageSize,
+                                                                                                                                                                    String desc) {
         BillSettlementParam billSettlementParam = BillSettlementParam.builder()
                 .periodStart(DateTimeFormatter.dateTimeToString(startTime))
                 .periodEnd(DateTimeFormatter.dateTimeToString(endTime))
                 .pageNo(Math.max(1, pageNo))
                 .pageSize(pageSize)
                 .build();
-        com.fengchaoit.webclient.Result<BillSettlement<T>> result = func.apply(billSettlementParam);
+        com.fengchaoit.webclient.Result<com.fengchaoit.webclient.btrip.model.bill.BillSettlement<T>> result = func.apply(billSettlementParam);
         if (result.isSuccess()) {
             return result.getModule();
         }
         log.error("拉取{}账单失败，原因：{}", desc, result.getMessage());
         throw new BusinessException("获取" + desc + "账单异常， 响应编码为：" + result.getCode() + "，响应消息为：" + result.getMessage());
     }
+
 
     /**
      * 订单查询

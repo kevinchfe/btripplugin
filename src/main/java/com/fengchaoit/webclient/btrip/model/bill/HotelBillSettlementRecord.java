@@ -1,4 +1,4 @@
-package com.fengchaoit.component.alibtrip.model.bill;
+package com.fengchaoit.webclient.btrip.model.bill;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fengchaoit.component.feishu.datasync.annotation.TableField;
@@ -7,6 +7,8 @@ import lombok.Setter;
 import lombok.ToString;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 /**
  * 酒店账单结算类
@@ -22,16 +24,16 @@ public class HotelBillSettlementRecord extends SettlementRecord {
     /**
      * 入住时间
      */
-//    @JsonProperty("check_in_date")
-//    @TableField(fieldName = "入住时间", description = "入住时间", fieldType = 5)
-//    private String checkInDate;
+    @JsonProperty("check_in_date")
+    @TableField(fieldName = "入住时间", description = "入住时间")
+    private String checkInDate;
 
     /**
      * 离店时间
      */
-//    @JsonProperty("check_out_date")
-//    @TableField(fieldName = "离店时间", description = "离店时间", fieldType = 5)
-//    private String checkOutDate;
+    @JsonProperty("check_out_date")
+    @TableField(fieldName = "离店时间", description = "离店时间")
+    private String checkOutDate;
 
     /**
      * 入住城市

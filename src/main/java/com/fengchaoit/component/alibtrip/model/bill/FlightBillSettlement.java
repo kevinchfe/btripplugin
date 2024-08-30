@@ -25,7 +25,7 @@ public class FlightBillSettlement extends SettlementRecord {
      */
     @TableField(fieldName = "起飞日期", description = "起飞日期", fieldType = 5, order = 4)
     @JsonProperty("dept_date")
-    private LocalDate deptDate;
+    private Long deptDate;
 
     /**
      * 起飞时间
@@ -37,9 +37,9 @@ public class FlightBillSettlement extends SettlementRecord {
     /**
      * 到达日期
      */
-//    @TableField(fieldName = "到达日期", description = "到达日期", fieldType = 5)
-//    @JsonProperty("arr_date")
-//    private String arrDate;
+    @TableField(fieldName = "到达日期", description = "到达日期", fieldType = 5)
+    @JsonProperty("arr_date")
+    private Long arrDate;
 
     /**
      * 到达时间

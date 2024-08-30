@@ -1,8 +1,8 @@
 package com.fengchaoit.convert;
 
-import com.fengchaoit.component.alibtrip.model.bill.FlightBillSettlement;
-import com.fengchaoit.webclient.btrip.model.bill.FlightBillSettlementRecord;
+import com.fengchaoit.component.alibtrip.model.bill.TrainBillSettlement;
 import com.fengchaoit.utils.DateTimeUtils;
+import com.fengchaoit.webclient.btrip.model.bill.TrainBillSettlementRecord;
 import org.mapstruct.Mapper;
 import org.mapstruct.factory.Mappers;
 
@@ -16,10 +16,10 @@ import java.time.LocalDate;
  * @since Created in 上午10:39 2024/8/30
  */
 @Mapper
-public interface FlightBillConvert {
-    FlightBillConvert INSTANCE = Mappers.getMapper(FlightBillConvert.class);
+public interface TrainBillConvert {
+    TrainBillConvert INSTANCE = Mappers.getMapper(TrainBillConvert.class);
 
-    FlightBillSettlement convertBtripBillToDwbgBill(FlightBillSettlementRecord bill);
+    TrainBillSettlement convertBtripBillToDwbgBill(TrainBillSettlementRecord bill);
 
     default Long map(LocalDate value) {
         if (value == null) {

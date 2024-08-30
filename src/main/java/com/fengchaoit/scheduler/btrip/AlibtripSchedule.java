@@ -1,13 +1,12 @@
 package com.fengchaoit.scheduler.btrip;
 
 import com.fengchaoit.component.alibtrip.model.bill.BillSettlement;
-import com.fengchaoit.component.alibtrip.model.bill.FlightBillSettlementRecord;
 import com.fengchaoit.component.alibtrip.model.bill.SettlementRecord;
 import com.fengchaoit.component.alibtrip.param.BillSettlementParam;
 import com.fengchaoit.exception.BusinessException;
 import com.fengchaoit.utils.DateTimeFormatter;
-import com.fengchaoit.webclient.btrip.AliBtripApi;
 import com.fengchaoit.webclient.Result;
+import com.fengchaoit.webclient.btrip.AliBtripApi;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -15,7 +14,6 @@ import org.springframework.stereotype.Component;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.function.BiFunction;
 import java.util.function.Function;
 
 /**

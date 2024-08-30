@@ -41,8 +41,8 @@ public interface AliBtripApi {
      * @return 结果集
      */
     @GetExchange(value = "/flight/v1/bill-settlement")
-    Result<BillSettlement<FlightBillSettlementRecord>> flightBillSettlement(@RequestBody BillSettlementParam param);
-//    Result<com.fengchaoit.webclient.btrip.model.bill.BillSettlement<com.fengchaoit.webclient.btrip.model.bill.FlightBillSettlementRecord>> flightBillSettlement(@RequestBody BillSettlementParam param);
+//    Result<BillSettlement<FlightBillSettlementRecord>> flightBillSettlement(@RequestBody BillSettlementParam param);
+    Result<com.fengchaoit.webclient.btrip.model.bill.BillSettlement<com.fengchaoit.webclient.btrip.model.bill.FlightBillSettlementRecord>> flightBillSettlement(@RequestBody BillSettlementParam param);
 
     /**
      * 酒店账单结果
@@ -51,7 +51,8 @@ public interface AliBtripApi {
      * @return 结果集
      */
     @GetExchange(value = "/hotel/v1/bill-settlement")
-    Result<BillSettlement<HotelBillSettlementRecord>> hotelBillSettlement(@RequestBody BillSettlementParam param);
+//    Result<BillSettlement<HotelBillSettlementRecord>> hotelBillSettlement(@RequestBody BillSettlementParam param);
+    Result<com.fengchaoit.webclient.btrip.model.bill.BillSettlement<com.fengchaoit.webclient.btrip.model.bill.HotelBillSettlementRecord>> hotelBillSettlement(@RequestBody BillSettlementParam param);
 
     /**
      * 火车账单结果
@@ -60,7 +61,8 @@ public interface AliBtripApi {
      * @return 结果集
      */
     @GetExchange(value = "/train/v1/bill-settlement")
-    Result<BillSettlement<TrainBillSettlementRecord>> trainBillSettlement(@RequestBody BillSettlementParam param);
+//    Result<BillSettlement<TrainBillSettlementRecord>> trainBillSettlement(@RequestBody BillSettlementParam param);
+    Result<com.fengchaoit.webclient.btrip.model.bill.BillSettlement<com.fengchaoit.webclient.btrip.model.bill.TrainBillSettlementRecord>> trainBillSettlement(@RequestBody BillSettlementParam param);
 
     /**
      * 打车账单结果
@@ -69,7 +71,8 @@ public interface AliBtripApi {
      * @return 结果集
      */
     @GetExchange(value = "/car/v1/bill-settlement")
-    Result<BillSettlement<CarBillSettlementRecord>> carBillSettlement(@RequestBody BillSettlementParam param);
+//    Result<BillSettlement<CarBillSettlementRecord>> carBillSettlement(@RequestBody BillSettlementParam param);
+    Result<com.fengchaoit.webclient.btrip.model.bill.BillSettlement<com.fengchaoit.webclient.btrip.model.bill.CarBillSettlementRecord>> carBillSettlement(@RequestBody BillSettlementParam param);
 
     /**
      * 机票订单列表查询

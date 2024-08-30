@@ -18,13 +18,13 @@ import java.math.BigDecimal;
 @Getter
 @Setter
 @ToString(callSuper = true)
-public class TrainBillSettlementRecord extends SettlementRecord {
+public class TrainBillSettlement extends SettlementRecord {
     /**
      * 发车日期
      */
-//    @TableField(fieldName = "发车日期", description = "发车日期", fieldType = 5)
-//    @JsonProperty("dept_date")
-//    private String deptDate;
+    @TableField(fieldName = "发车日期", description = "发车日期", fieldType = 5, order = 4)
+    @JsonProperty("dept_date")
+    private Long deptDate;
 
     /**
      * 发车时间
@@ -36,9 +36,9 @@ public class TrainBillSettlementRecord extends SettlementRecord {
     /**
      * 到达日期
      */
-//    @TableField(fieldName = "到达日期", description = "到达日期", fieldType = 5)
-//    @JsonProperty("arr_date")
-//    private String arrDate;
+    @TableField(fieldName = "到达日期", description = "到达日期", fieldType = 5, order = 5)
+    @JsonProperty("arr_date")
+    private Long arrDate;
 
     /**
      * 到达时间

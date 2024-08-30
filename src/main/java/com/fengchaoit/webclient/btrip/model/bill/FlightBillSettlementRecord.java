@@ -1,8 +1,6 @@
 package com.fengchaoit.webclient.btrip.model.bill;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fengchaoit.component.alibtrip.model.bill.SettlementRecord;
-import com.fengchaoit.component.feishu.datasync.annotation.TableField;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -37,7 +35,7 @@ public class FlightBillSettlementRecord extends SettlementRecord {
      * 到达日期
      */
     @JsonProperty("arr_date")
-    private String arrDate;
+    private LocalDate arrDate;
 
     /**
      * 到达时间
