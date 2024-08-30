@@ -40,6 +40,7 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -81,7 +82,7 @@ public class PluginController {
 //                    builder.dataSourceConfigUiUri("https://ext.baseopendev.com/ext/data-sync-fe-demo/c70fa2864a002386423f26411f21a3c674bc2f9c/index.html");
 //                    builder.dataSourceConfigUiUri("https://developer-ld.fengchaoit.com/#/newchannel");
                     builder.dataSourceConfigUiUri("https://dev.fengchaoit.com/dwbgPlugin/#/newchannel");
-                    builder.initHeight(610);
+                    builder.initHeight(510);
                     builder.initWeight(520);
                 })
                 .protocol(builder -> {
@@ -102,27 +103,27 @@ public class PluginController {
      */
     @PostMapping(value = "/table_meta")
     public Result tableMeta(@RequestBody TableMetaParam param) {
-        return process(param, (RecordHandler) (category, type, startTime, pageToken, pageSize) -> {
+        return process(param, (RecordHandler) (category, type, startTime, corpName, pageToken, pageSize) -> {
             if (category == Constant.FEISHU_BILL) {
                 return switch (type) {
                     case 1 -> {
                         List<Field> fields = processTableMeta(FlightBillSettlementRecord.class);
-                        TableMeta tableMeta = TableMeta.of("机票账单", fields);
+                        TableMeta tableMeta = TableMeta.of( corpName + "机票账单", fields);
                         yield Result.success().data(tableMeta).build();
                     }
                     case 2 -> {
                         List<Field> fields = processTableMeta(HotelBillSettlementRecord.class);
-                        TableMeta tableMeta = TableMeta.of("酒店账单", fields);
+                        TableMeta tableMeta = TableMeta.of(corpName + "酒店账单", fields);
                         yield Result.success().data(tableMeta).build();
                     }
                     case 3 -> {
                         List<Field> fields = processTableMeta(TrainBillSettlementRecord.class);
-                        TableMeta tableMeta = TableMeta.of("火车账单", fields);
+                        TableMeta tableMeta = TableMeta.of( corpName + "火车账单", fields);
                         yield Result.success().data(tableMeta).build();
                     }
                     case 4 -> {
                         List<Field> fields = processTableMeta(CarBillSettlementRecord.class);
-                        TableMeta tableMeta = TableMeta.of("用车账单", fields);
+                        TableMeta tableMeta = TableMeta.of(corpName + "用车账单", fields);
                         yield Result.success().data(tableMeta).build();
                     }
                     default -> Result.fail("未找到对应类型").build();
@@ -131,22 +132,22 @@ public class PluginController {
                 return switch (type) {
                     case 1 -> {
                         List<Field> fields = processTableMeta(FlightOrder.class);
-                        TableMeta tableMeta = TableMeta.of("机票订单", fields);
+                        TableMeta tableMeta = TableMeta.of(corpName + "机票订单", fields);
                         yield Result.success().data(tableMeta).build();
                     }
                     case 2 -> {
                         List<Field> fields = processTableMeta(HotelOrder.class);
-                        TableMeta tableMeta = TableMeta.of("酒店订单", fields);
+                        TableMeta tableMeta = TableMeta.of(corpName + "酒店订单", fields);
                         yield Result.success().data(tableMeta).build();
                     }
                     case 3 -> {
                         List<Field> fields = processTableMeta(TrainOrder.class);
-                        TableMeta tableMeta = TableMeta.of("火车订单", fields);
+                        TableMeta tableMeta = TableMeta.of(corpName + "火车订单", fields);
                         yield Result.success().data(tableMeta).build();
                     }
                     case 4 -> {
                         List<Field> fields = processTableMeta(CarOrder.class);
-                        TableMeta tableMeta = TableMeta.of("用车订单", fields);
+                        TableMeta tableMeta = TableMeta.of(corpName + "用车订单", fields);
                         yield Result.success().data(tableMeta).build();
                     }
                     default -> Result.fail("未找到对应类型").build();
@@ -163,17 +164,12 @@ public class PluginController {
      */
     @PostMapping("/records")
     public Result records(@RequestBody TableMetaParam param) {
-        return process(param, (RecordHandler) (category, type, startTime, pageToken, pageSize) -> {
-
+        return process(param, (RecordHandler) (category, type, startTime, corpName, pageToken, pageSize) -> {
             int page = NumberUtils.toInt(pageToken, 1);
-
-//            // 当月第一天
-            startTime = LocalDateTime.now().withDayOfMonth(1).withHour(0).withMinute(0).withSecond(0).withNano(0);
-//            // 加一天
-            LocalDateTime endTime = startTime.plusDays(1);
 
             // api获取数据
             if (category == Constant.FEISHU_BILL) { // 账单
+                LocalDateTime endTime = startTime.plusDays(1);
                 BillSettlement<?> billSettlement;
                 TableData.Builder tableDataBuilder = TableData.create().hasMore(false);
                 switch (type) {
@@ -207,6 +203,7 @@ public class PluginController {
                 TableData tableData = processRecordToData(tableDataBuilder, fields, items, category, type);
                 return Result.success().data(tableData).build();
             } else { // 订单
+                LocalDateTime endTime = LocalDateTime.now();
                 TableData.Builder tableDataBuilder = TableData.create().hasMore(false);
                 switch (type) {
                     case 1 -> {
@@ -229,7 +226,6 @@ public class PluginController {
                         // 列表类型转换
                         List<FlightOrder> dwbgOrders = records.stream().map(FlightOrderConvert.INSTANCE::convertBtripOrderToDwbgOrder).toList();
                         List<Field> fields = processTableMeta(dwbgOrders.get(0).getClass());
-//                        List<PrimaryKey> items = dwbgOrders.stream().map(it -> (PrimaryKey) it).toList();
                         List<PrimaryKey> items = dwbgOrders.stream().filter(it -> it.getId() != null).map(it -> (PrimaryKey) it).toList();
                         TableData tableData = processRecordToData(tableDataBuilder, fields, items, category, type);
                         return Result.success().data(tableData).build();
@@ -254,7 +250,6 @@ public class PluginController {
                         // 列表类型转换
                         List<HotelOrder> dwbgOrders = records.stream().map(HotelOrderConvert.INSTANCE::convertBtripOrderToDwbgOrder).toList();
                         List<Field> fields = processTableMeta(dwbgOrders.get(0).getClass());
-//                        List<PrimaryKey> items = dwbgOrders.stream().map(it -> (PrimaryKey) it).toList();
                         List<PrimaryKey> items = dwbgOrders.stream().filter(it -> it.getId() != null).map(it -> (PrimaryKey) it).toList();
                         TableData tableData = processRecordToData(tableDataBuilder, fields, items, category, type);
                         return Result.success().data(tableData).build();
@@ -279,7 +274,6 @@ public class PluginController {
                         // 列表类型转换
                         List<TrainOrder> dwbgOrders = records.stream().map(TrainOrderConvert.INSTANCE::convertBtripOrderToDwbgOrder).toList();
                         List<Field> fields = processTableMeta(dwbgOrders.get(0).getClass());
-//                        List<PrimaryKey> items = dwbgOrders.stream().map(it -> (PrimaryKey) it).toList();
                         List<PrimaryKey> items = dwbgOrders.stream().filter(it -> it.getId() != null).map(it -> (PrimaryKey) it).toList();
                         TableData tableData = processRecordToData(tableDataBuilder, fields, items, category, type);
                         return Result.success().data(tableData).build();
@@ -304,7 +298,6 @@ public class PluginController {
                         // 列表类型转换
                         List<CarOrder> dwbgOrders = records.stream().map(CarOrderConvert.INSTANCE::convertBtripOrderToDwbgOrder).toList();
                         List<Field> fields = processTableMeta(dwbgOrders.get(0).getClass());
-//                        List<PrimaryKey> items = dwbgOrders.stream().map(it -> (PrimaryKey) it).toList();
                         List<PrimaryKey> items = dwbgOrders.stream().filter(it -> it.getId() != null).map(it -> (PrimaryKey) it).toList();
                         TableData tableData = processRecordToData(tableDataBuilder, fields, items, category, type);
                         return Result.success().data(tableData).build();
@@ -381,15 +374,12 @@ public class PluginController {
         String appKey = paramJson.getString("appKey");
         String appSecret = paramJson.getString("appSecret");
         String corpId = paramJson.getString("corpId");
+        String corpName = paramJson.getString("corpName");
         String startTimeStr = paramJson.getString("startTime");
-        LocalDateTime startTime = LocalDateTime.now();
-        // 2024-8-1 00:00 转换
-//        java.time.format.DateTimeFormatter formatter = java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-//        LocalDateTime startTime = LocalDateTime.parse(startTimeStr, formatter);
-
+        LocalDateTime startTime = LocalDateTime.parse(startTimeStr + "T00:00:00", java.time.format.DateTimeFormatter.ISO_LOCAL_DATE_TIME);
         if (handler instanceof RecordHandler recordHandler) {
             AliBtripAccountHolder.setAccount(appKey, appSecret, corpId);
-            return recordHandler.handle(category, type, startTime, pageToken, pageSize);
+            return recordHandler.handle(category, type, startTime, corpName, pageToken, pageSize);
         } else {
             return handler.MetaHandle(type);
         }
@@ -541,11 +531,12 @@ public class PluginController {
          * @param category  1-账单 2-订单
          * @param type      1-机票 2-酒店 3-火车 4-用车
          * @param startTime 开始时间
+         * @param corpName  企业名称
          * @param pageToken 分页参数
          * @param pageSize  每页显示条数
          * @return 结果集
          */
-        Result handle(int category, int type, LocalDateTime startTime, String pageToken, int pageSize);
+        Result handle(int category, int type, LocalDateTime startTime, String corpName, String pageToken, int pageSize);
     }
 
     /**

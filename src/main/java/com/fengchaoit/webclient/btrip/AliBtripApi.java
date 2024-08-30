@@ -42,6 +42,7 @@ public interface AliBtripApi {
      */
     @GetExchange(value = "/flight/v1/bill-settlement")
     Result<BillSettlement<FlightBillSettlementRecord>> flightBillSettlement(@RequestBody BillSettlementParam param);
+//    Result<com.fengchaoit.webclient.btrip.model.bill.BillSettlement<com.fengchaoit.webclient.btrip.model.bill.FlightBillSettlementRecord>> flightBillSettlement(@RequestBody BillSettlementParam param);
 
     /**
      * 酒店账单结果

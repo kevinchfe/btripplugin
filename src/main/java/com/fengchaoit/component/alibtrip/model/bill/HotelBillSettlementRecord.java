@@ -25,10 +25,10 @@ public class HotelBillSettlementRecord extends SettlementRecord {
 //    @JsonProperty("check_in_date")
 //    @TableField(fieldName = "入住时间", description = "入住时间", fieldType = 5)
 //    private String checkInDate;
-//
-//    /**
-//     * 离店时间
-//     */
+
+    /**
+     * 离店时间
+     */
 //    @JsonProperty("check_out_date")
 //    @TableField(fieldName = "离店时间", description = "离店时间", fieldType = 5)
 //    private String checkOutDate;

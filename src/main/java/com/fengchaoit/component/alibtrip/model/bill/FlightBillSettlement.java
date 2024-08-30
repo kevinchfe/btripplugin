@@ -1,17 +1,13 @@
 package com.fengchaoit.component.alibtrip.model.bill;
 
-import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fengchaoit.component.feishu.datasync.annotation.TableField;
-import com.fengchaoit.utils.DateTimeUtils;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
 
 /**
  * 机票账单数据
@@ -23,13 +19,13 @@ import java.time.ZoneId;
 @Getter
 @Setter
 @ToString(callSuper = true)
-public class FlightBillSettlementRecord extends SettlementRecord {
+public class FlightBillSettlement extends SettlementRecord {
     /**
      * 起飞日期
      */
-//    @TableField(fieldName = "起飞日期", description = "起飞日期", fieldType = 5, order = 4)
-//    @JsonProperty("dept_date")
-//    private LocalDate deptDate;
+    @TableField(fieldName = "起飞日期", description = "起飞日期", fieldType = 5, order = 4)
+    @JsonProperty("dept_date")
+    private LocalDate deptDate;
 
     /**
      * 起飞时间
