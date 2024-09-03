@@ -1,8 +1,11 @@
 package com.fengchaoit.convert;
 
 import com.fengchaoit.component.alibtrip.model.order.HotelOrder;
+import com.fengchaoit.utils.DateTimeFormatter;
 import com.fengchaoit.utils.DateTimeUtils;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.Mappings;
 import org.mapstruct.factory.Mappers;
 
 import java.time.LocalDateTime;
@@ -28,4 +31,18 @@ public interface HotelOrderConvert {
         return DateTimeUtils.dateTimeToMilliSecond(value);
     }
 
+    default String mapToString(LocalDateTime value) {
+        if (value == null) {
+            return null;
+        }
+        return DateTimeFormatter.dateTimeToString(value);
+    }
+
+    // 将Integer或者Long类型的为0的值转为空字符串
+    default String mapZeroToEmpty(Integer value) {
+        if (value == null || value == 0) {
+            return "";
+        }
+        return value.toString();
+    }
 }

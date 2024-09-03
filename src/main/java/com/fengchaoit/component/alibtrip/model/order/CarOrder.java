@@ -121,7 +121,7 @@ public class CarOrder extends Order {
      * 6：已取消。
      */
     @JsonProperty("order_status")
-    @TableField(fieldName = "订单状态", description = "订单状态")
+    @TableField(fieldName = "订单状态", description = "订单状态", order = 1)
     private Integer orderStatus;
 
     /**
@@ -130,9 +130,9 @@ public class CarOrder extends Order {
      * 2：舒适型。
      * 3：豪华型。
      */
-    @JsonProperty("car_level")
-    @TableField(fieldName = "车类型级别", description = "车类型级别")
-    private Integer carLevel;
+//    @JsonProperty("car_level")
+//    @TableField(fieldName = "车类型级别", description = "车类型级别")
+//    private Integer carLevel;
 
     /**
      * 车辆信息
@@ -278,9 +278,9 @@ public class CarOrder extends Order {
     /**
      * 是否特殊订单
      */
-    @JsonProperty("is_special")
-    @TableField(fieldName = "是否特殊订单", description = "是否特殊订单")
-    private Boolean isSpecial;
+//    @JsonProperty("is_special")
+//    @TableField(fieldName = "是否特殊订单", description = "是否特殊订单")
+//    private Boolean isSpecial;
 
     /**
      * 实际出发城市六字码
@@ -320,31 +320,55 @@ public class CarOrder extends Order {
     // 价格信息类目
     // 用车支付
     @JsonProperty("price_info")
-    @TableField(fieldName = "用车支付", description = "用车支付", fieldType = 8)
-    private BigDecimal princeInfo;
+    @TableField(fieldName = "用车支付", description = "用车支付", fieldType = 8, order = 30)
+    private BigDecimal priceInfo;
+
+    @JsonProperty("price_info_pay_type")
+    @TableField(fieldName = "用车支付支付方式", description = "用车支付支付方式", order = 31)
+    private String princeInfoPayType;
 
     // 用车服务费
     @JsonProperty("service_price_info")
-    @TableField(fieldName = "用车服务费", description = "用车服务费", fieldType = 8)
+    @TableField(fieldName = "用车服务费", description = "用车服务费", fieldType = 8, order = 32)
     private BigDecimal servicePriceInfo;
+
+    @JsonProperty("service_price_info_pay_type")
+    @TableField(fieldName = "用车服务费支付方式", description = "用车服务费支付方式", order = 33)
+    private String servicePriceInfoPayType;
 
     // 用车取消后收费
     @JsonProperty("cancel_price_info")
-    @TableField(fieldName = "用车取消后收费", description = "用车取消后收费", fieldType = 8)
+    @TableField(fieldName = "用车取消后收费", description = "用车取消后收费", fieldType = 8, order = 34)
     private BigDecimal cancelPriceInfo;
+
+    @JsonProperty("cancel_price_info_pay_type")
+    @TableField(fieldName = "用车取消后收费支付方式", description = "用车取消后收费支付方式", order = 35)
+    private String cancelPriceInfoPayType;
 
     // 用车调账扣款
     @JsonProperty("adjust_price_info")
-    @TableField(fieldName = "用车调账扣款", description = "用车调账扣款", fieldType = 8)
+    @TableField(fieldName = "用车调账扣款", description = "用车调账扣款", fieldType = 8, order = 36)
     private BigDecimal adjustPriceInfo;
+
+    @JsonProperty("adjust_price_info_pay_type")
+    @TableField(fieldName = "用车调账扣款支付方式", description = "用车调账扣款支付方式", order = 37)
+    private String adjustPriceInfoPayType;
 
     // 退款
     @JsonProperty("refund_price_info")
-    @TableField(fieldName = "退款", description = "退款", fieldType = 8)
+    @TableField(fieldName = "退款", description = "退款", fieldType = 8, order = 38)
     private BigDecimal refundPriceInfo;
+
+    @JsonProperty("refund_price_info_pay_type")
+    @TableField(fieldName = "退款支付方式", description = "退款支付方式", order = 39)
+    private String refundPriceInfoPayType;
 
     // 赔付
     @JsonProperty("compensation_price_info")
-    @TableField(fieldName = "赔付", description = "赔付", fieldType = 8)
+    @TableField(fieldName = "赔付", description = "赔付", fieldType = 8, order = 40)
     private BigDecimal compensationPriceInfo;
+
+    @JsonProperty("compensation_price_info_pay_type")
+    @TableField(fieldName = "赔付支付方式", description = "赔付支付方式", order = 41)
+    private String compensationPriceInfoPayType;
 }

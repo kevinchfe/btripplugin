@@ -1,6 +1,7 @@
 package com.fengchaoit.convert;
 
 import com.fengchaoit.component.alibtrip.model.order.FlightOrder;
+import com.fengchaoit.utils.DateTimeFormatter;
 import com.fengchaoit.utils.DateTimeUtils;
 import org.mapstruct.Mapper;
 import org.mapstruct.factory.Mappers;
@@ -25,6 +26,20 @@ public interface FlightOrderConvert {
             return null;
         }
         return DateTimeUtils.dateTimeToMilliSecond(value);
+    }
+
+    default String mapToString(LocalDateTime value) {
+        if (value == null) {
+            return null;
+        }
+        return DateTimeFormatter.dateTimeToString(value);
+    }
+
+    default String mapZeroToEmpty(Integer value) {
+        if (value == null || value == 0) {
+            return "";
+        }
+        return value.toString();
     }
 
 }
