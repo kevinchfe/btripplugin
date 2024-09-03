@@ -33,6 +33,12 @@ public interface TrainBillConvert {
         if (value == null) {
             return null;
         }
-        return value.replace("T", " ").replace("Z", "");
+        if (value.matches("\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}Z")) {
+            return value.replace("T", " ").replace("Z", "");
+        } else {
+            return value;
+        }
+
+//        return value.replace("T", " ").replace("Z", "");
     }
 }

@@ -14,7 +14,6 @@ import com.fengchaoit.component.feishu.datasync.model.Field;
 import com.fengchaoit.component.feishu.datasync.model.PrimaryKey;
 import com.fengchaoit.component.feishu.datasync.model.TableData;
 import com.fengchaoit.component.feishu.datasync.model.TableMeta;
-import com.fengchaoit.config.props.AliBtripProperties;
 import com.fengchaoit.convert.*;
 import com.fengchaoit.dto.order.CarPriceDto;
 import com.fengchaoit.dto.order.FlightPriceDto;
@@ -61,12 +60,10 @@ import java.util.function.Function;
 @RequestMapping("/plugin/connector")
 public class PluginController {
     private final AliBtripApi aliBtripApi;
-    private final AliBtripProperties aliBtripProperties;
     private final StringRedisTemplate stringRedisTemplate;
 
-    public PluginController(AliBtripApi aliBtripApi, AliBtripProperties aliBtripProperties, StringRedisTemplate stringRedisTemplate) {
+    public PluginController(AliBtripApi aliBtripApi, StringRedisTemplate stringRedisTemplate) {
         this.aliBtripApi = aliBtripApi;
-        this.aliBtripProperties = aliBtripProperties;
         this.stringRedisTemplate = stringRedisTemplate;
     }
 
@@ -175,6 +172,11 @@ public class PluginController {
                 List<SettlementRecord> allData = new ArrayList<>();
                 TableData.Builder tableDataBuilder = TableData.create().hasMore(false);
 
+                LocalDateTime targetDate = startTime.plusMonths(1);
+                if (targetDate.isAfter(LocalDateTime.now().minusHours(2))) {
+                    targetDate = LocalDateTime.now().minusHours(2);
+                }
+//                targetDate = LocalDateTime.of(2024, 8, 20, 0, 0, 0);
                 do {
                     endTime = startTime.plusDays(1);
                     System.out.println("startTime = " + startTime);
@@ -220,7 +222,8 @@ public class PluginController {
                         }
                     }
                     startTime = endTime;
-                } while (startTime.isBefore(LocalDateTime.now().minusDays(1)));
+//                } while (startTime.isBefore(LocalDateTime.now().minusDays(1)));
+                } while (startTime.isBefore(targetDate));
                 List<PrimaryKey> items = allData.stream().map(it -> (PrimaryKey) it).toList();
                 TableData tableData = processRecordToData(tableDataBuilder, fields, items, category, type);
                 return Result.success().data(tableData).build();
@@ -785,7 +788,6 @@ public class PluginController {
          * 处理器
          *
          * @param type 1-机票 2-酒店 3-火车 4-用车
-         * @return
          */
         default Result MetaHandle(int type) {
             return Result.fail("方法未实现").build();
@@ -902,10 +904,11 @@ public class PluginController {
 
         // 通用处理方法
         private static void setPrice(Consumer<BigDecimal> setPrice, Consumer<String> setPayType, FlightPriceDto flightPriceDto) {
+            BigDecimal price = flightPriceDto.getPrice() != null ? flightPriceDto.getPrice() : BigDecimal.ZERO; // 处理getPrice为null的情况
             if (flightPriceDto.getType() == 1) {
-                setPrice.accept(flightPriceDto.getPrice());
+                setPrice.accept(price);
             } else {
-                setPrice.accept(flightPriceDto.getPrice().negate());
+                setPrice.accept(price.negate());
             }
             OrderPayType payType = OrderPayType.fromCode(flightPriceDto.getPayType());
             setPayType.accept(payType.getDescription());
@@ -930,10 +933,11 @@ public class PluginController {
 
         // 通用处理方法
         private static void setPrice(Consumer<BigDecimal> setPrice, Consumer<String> setPayType, HotelPriceDto hotelPriceDto) {
+            BigDecimal price = hotelPriceDto.getPrice() != null ? hotelPriceDto.getPrice() : BigDecimal.ZERO; // 处理getPrice为null的情况
             if (hotelPriceDto.getType() == 1) {
-                setPrice.accept(hotelPriceDto.getPrice());
+                setPrice.accept(price);
             } else {
-                setPrice.accept(hotelPriceDto.getPrice().negate());
+                setPrice.accept(price.negate());
             }
             OrderPayType payType = OrderPayType.fromCode(hotelPriceDto.getPayType());
             setPayType.accept(payType.getDescription());
@@ -963,10 +967,11 @@ public class PluginController {
 
         // 通用处理方法
         private static void setPrice(Consumer<BigDecimal> setPrice, Consumer<String> setPayType, TrainPriceDto trainPriceDto) {
+            BigDecimal price = trainPriceDto.getPrice() != null ? trainPriceDto.getPrice() : BigDecimal.ZERO; // 处理getPrice为null的情况
             if (trainPriceDto.getType() == 1) {
-                setPrice.accept(trainPriceDto.getPrice());
+                setPrice.accept(price);
             } else {
-                setPrice.accept(trainPriceDto.getPrice().negate());
+                setPrice.accept(price.negate());
             }
             OrderPayType payType = OrderPayType.fromCode(trainPriceDto.getPayType());
             setPayType.accept(payType.getDescription());
@@ -989,10 +994,11 @@ public class PluginController {
         }
 
         private static void setPrice(Consumer<BigDecimal> setPrice, Consumer<String> setPayType, CarPriceDto carPriceDto) {
+            BigDecimal price = carPriceDto.getPrice() != null ? carPriceDto.getPrice() : BigDecimal.ZERO; // 处理getPrice为null的情况
             if (carPriceDto.getType() == 1) {
-                setPrice.accept(carPriceDto.getPrice());
+                setPrice.accept(price);
             } else {
-                setPrice.accept(carPriceDto.getPrice().negate());
+                setPrice.accept(price.negate());
             }
             OrderPayType payType = OrderPayType.fromCode(carPriceDto.getPayType());
             setPayType.accept(payType.getDescription());
