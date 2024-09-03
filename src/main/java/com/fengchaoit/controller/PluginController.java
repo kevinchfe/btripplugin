@@ -35,6 +35,7 @@ import com.fengchaoit.webclient.btrip.model.order.OrderResult;
 import com.fengchaoit.webclient.btrip.param.order.OrderListQueryParam;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -42,7 +43,10 @@ import org.springframework.util.ReflectionUtils;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
+import java.time.Duration;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.temporal.TemporalAdjusters;
 import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -102,7 +106,7 @@ public class PluginController {
      */
     @PostMapping(value = "/table_meta")
     public Result tableMeta(@RequestBody TableMetaParam param) {
-        return process(param, (RecordHandler) (category, type, startTime, corpName, pageToken, pageSize) -> {
+        return process(param, (RecordHandler) (category, type, startTime, appKey, corpName, pageToken, pageSize) -> {
             if (category == Constant.FEISHU_BILL) {
                 return switch (type) {
                     case 1 -> {
@@ -163,68 +167,71 @@ public class PluginController {
      */
     @PostMapping("/records")
     public Result records(@RequestBody TableMetaParam param) {
-        return process(param, (RecordHandler) (category, type, startTime, corpName, pageToken, pageSize) -> {
+        return process(param, (RecordHandler) (category, type, startTime, appKey, corpName, pageToken, pageSize) -> {
             int page = NumberUtils.toInt(pageToken, 1);
 
             if (category == Constant.FEISHU_BILL) { // 账单
                 LocalDateTime endTime;
                 List<Field> fields;
-                List<SettlementRecord> allData = new ArrayList<>();
+                List<PrimaryKey> items;
                 TableData.Builder tableDataBuilder = TableData.create().hasMore(false);
-
-                LocalDateTime targetDate = startTime.plusMonths(1);
+                String md5Key = DigestUtils.md5Hex(category + ":" + appKey + ":" + type);
+                LocalDateTime targetDate = startTime.with(TemporalAdjusters.lastDayOfMonth()).with(LocalTime.MAX);
                 if (targetDate.isAfter(LocalDateTime.now().minusHours(2))) {
                     targetDate = LocalDateTime.now().minusHours(2);
                 }
-//                targetDate = LocalDateTime.of(2024, 8, 20, 0, 0, 0);
-                do {
-                    endTime = startTime.plusDays(1);
-                    System.out.println("startTime = " + startTime);
-                    System.out.println("endTime = " + endTime);
-                    // endTime只能小于等于当前时间减两小时
-                    endTime = endTime.isAfter(LocalDateTime.now().minusHours(2)) ? LocalDateTime.now().minusHours(2) : endTime;
-                    com.fengchaoit.webclient.btrip.model.bill.BillSettlement<?> billSettlement;
-                    switch (type) {
-                        case 1 -> {
-                            billSettlement = billSettlementQuery(aliBtripApi::flightBillSettlement,
-                                    startTime, endTime, page, pageSize, "机票");
-                            List<com.fengchaoit.webclient.btrip.model.bill.FlightBillSettlementRecord> records = (List<com.fengchaoit.webclient.btrip.model.bill.FlightBillSettlementRecord>) billSettlement.getRecords();
-                            List<FlightBillSettlement> dwbgBills = records.stream().map(FlightBillConvert.INSTANCE::convertBtripBillToDwbgBill).toList();
-                            fields = processTableMeta(FlightBillSettlement.class);
-                            allData.addAll(dwbgBills);
-                        }
-                        case 2 -> {
-                            billSettlement = billSettlementQuery(aliBtripApi::hotelBillSettlement,
-                                    startTime, endTime, page, pageSize, "酒店");
-                            List<com.fengchaoit.webclient.btrip.model.bill.HotelBillSettlementRecord> records = (List<com.fengchaoit.webclient.btrip.model.bill.HotelBillSettlementRecord>) billSettlement.getRecords();
-                            List<HotelBillSettlement> dwbgBills = records.stream().map(HotelBillConvert.INSTANCE::convertBtripBillToDwbgBill).toList();
-                            fields = processTableMeta(HotelBillSettlement.class);
-                            allData.addAll(dwbgBills);
-                        }
-                        case 3 -> {
-                            billSettlement = billSettlementQuery(aliBtripApi::trainBillSettlement,
-                                    startTime, endTime, page, pageSize, "火车");
-                            List<com.fengchaoit.webclient.btrip.model.bill.TrainBillSettlementRecord> records = (List<com.fengchaoit.webclient.btrip.model.bill.TrainBillSettlementRecord>) billSettlement.getRecords();
-                            List<TrainBillSettlement> dwbgBills = records.stream().map(TrainBillConvert.INSTANCE::convertBtripBillToDwbgBill).toList();
-                            fields = processTableMeta(TrainBillSettlement.class);
-                            allData.addAll(dwbgBills);
-                        }
-                        case 4 -> {
-                            billSettlement = billSettlementQuery(aliBtripApi::carBillSettlement,
-                                    startTime, endTime, page, pageSize, "用车");
-                            List<com.fengchaoit.webclient.btrip.model.bill.CarBillSettlementRecord> records = (List<com.fengchaoit.webclient.btrip.model.bill.CarBillSettlementRecord>) billSettlement.getRecords();
-                            List<CarBillSettlement> dwbgBills = records.stream().map(CarBillConvert.INSTANCE::convertBtripBillToDwbgBill).toList();
-                            fields = processTableMeta(CarBillSettlement.class);
-                            allData.addAll(dwbgBills);
-                        }
-                        default -> {
-                            return Result.fail("未找到对应类型").build();
-                        }
+                startTime = stringRedisTemplate.opsForValue().get(md5Key) == null ? startTime : LocalDateTime.parse(Objects.requireNonNull(stringRedisTemplate.opsForValue().get(md5Key)));
+                endTime = startTime.plusDays(1);
+                endTime = endTime.isAfter(LocalDateTime.now().minusHours(2)) ? LocalDateTime.now().minusHours(2) : endTime;
+
+                System.out.println("startTime = " + startTime);
+                System.out.println("endTime = " + endTime);
+                com.fengchaoit.webclient.btrip.model.bill.BillSettlement<?> billSettlement;
+                page = 1;
+                switch (type) {
+                    case 1 -> {
+                        billSettlement = billSettlementQuery(aliBtripApi::flightBillSettlement,
+                                startTime, endTime, page, pageSize, "机票");
+                        List<com.fengchaoit.webclient.btrip.model.bill.FlightBillSettlementRecord> records = (List<com.fengchaoit.webclient.btrip.model.bill.FlightBillSettlementRecord>) billSettlement.getRecords();
+                        List<FlightBillSettlement> dwbgBills = records.stream().map(FlightBillConvert.INSTANCE::convertBtripBillToDwbgBill).toList();
+                        fields = processTableMeta(FlightBillSettlement.class);
+                        items = dwbgBills.stream().map(it -> (PrimaryKey) it).toList();
                     }
-                    startTime = endTime;
-//                } while (startTime.isBefore(LocalDateTime.now().minusDays(1)));
-                } while (startTime.isBefore(targetDate));
-                List<PrimaryKey> items = allData.stream().map(it -> (PrimaryKey) it).toList();
+                    case 2 -> {
+                        billSettlement = billSettlementQuery(aliBtripApi::hotelBillSettlement,
+                                startTime, endTime, page, pageSize, "酒店");
+                        List<com.fengchaoit.webclient.btrip.model.bill.HotelBillSettlementRecord> records = (List<com.fengchaoit.webclient.btrip.model.bill.HotelBillSettlementRecord>) billSettlement.getRecords();
+                        List<HotelBillSettlement> dwbgBills = records.stream().map(HotelBillConvert.INSTANCE::convertBtripBillToDwbgBill).toList();
+                        fields = processTableMeta(HotelBillSettlement.class);
+                        items = dwbgBills.stream().map(it -> (PrimaryKey) it).toList();
+                    }
+                    case 3 -> {
+                        billSettlement = billSettlementQuery(aliBtripApi::trainBillSettlement,
+                                startTime, endTime, page, pageSize, "火车");
+                        List<com.fengchaoit.webclient.btrip.model.bill.TrainBillSettlementRecord> records = (List<com.fengchaoit.webclient.btrip.model.bill.TrainBillSettlementRecord>) billSettlement.getRecords();
+                        List<TrainBillSettlement> dwbgBills = records.stream().map(TrainBillConvert.INSTANCE::convertBtripBillToDwbgBill).toList();
+                        fields = processTableMeta(TrainBillSettlement.class);
+                        items = dwbgBills.stream().map(it -> (PrimaryKey) it).toList();
+                    }
+                    case 4 -> {
+                        billSettlement = billSettlementQuery(aliBtripApi::carBillSettlement,
+                                startTime, endTime, page, pageSize, "用车");
+                        List<com.fengchaoit.webclient.btrip.model.bill.CarBillSettlementRecord> records = (List<com.fengchaoit.webclient.btrip.model.bill.CarBillSettlementRecord>) billSettlement.getRecords();
+                        List<CarBillSettlement> dwbgBills = records.stream().map(CarBillConvert.INSTANCE::convertBtripBillToDwbgBill).toList();
+                        fields = processTableMeta(CarBillSettlement.class);
+                        items = dwbgBills.stream().map(it -> (PrimaryKey) it).toList();
+                    }
+                    default -> {
+                        return Result.fail("未找到对应类型").build();
+                    }
+                }
+                if (endTime.plus(Duration.ofSeconds(86399)).isAfter(targetDate)) {
+                    stringRedisTemplate.delete(md5Key);
+                    tableDataBuilder.hasMore(false);
+                } else {
+                    stringRedisTemplate.opsForValue().set(md5Key, String.valueOf(endTime));
+                    tableDataBuilder.hasMore(true).nextPageToken(String.valueOf(page + 1));
+                }
                 TableData tableData = processRecordToData(tableDataBuilder, fields, items, category, type);
                 return Result.success().data(tableData).build();
             } else { // 订单
@@ -451,7 +458,7 @@ public class PluginController {
         LocalDateTime startTime = LocalDateTime.parse(startTimeStr + "T00:00:00", java.time.format.DateTimeFormatter.ISO_LOCAL_DATE_TIME);
         if (handler instanceof RecordHandler recordHandler) {
             AliBtripAccountHolder.setAccount(appKey, appSecret, corpId);
-            return recordHandler.handle(category, type, startTime, corpName, pageToken, pageSize);
+            return recordHandler.handle(category, type, startTime, appKey, corpName, pageToken, pageSize);
         } else {
             return handler.MetaHandle(type);
         }
@@ -804,12 +811,13 @@ public class PluginController {
          * @param category  1-账单 2-订单
          * @param type      1-机票 2-酒店 3-火车 4-用车
          * @param startTime 开始时间
+         * @param appKey    appKey
          * @param corpName  企业名称
          * @param pageToken 分页参数
          * @param pageSize  每页显示条数
          * @return 结果集
          */
-        Result handle(int category, int type, LocalDateTime startTime, String corpName, String pageToken, int pageSize);
+        Result handle(int category, int type, LocalDateTime startTime, String appKey, String corpName, String pageToken, int pageSize);
     }
 
     /**
