@@ -14,8 +14,11 @@ import com.fengchaoit.component.feishu.datasync.model.Field;
 import com.fengchaoit.component.feishu.datasync.model.PrimaryKey;
 import com.fengchaoit.component.feishu.datasync.model.TableData;
 import com.fengchaoit.component.feishu.datasync.model.TableMeta;
-import com.fengchaoit.config.props.AliBtripProperties;
 import com.fengchaoit.convert.*;
+import com.fengchaoit.dto.order.CarPriceDto;
+import com.fengchaoit.dto.order.FlightPriceDto;
+import com.fengchaoit.dto.order.HotelPriceDto;
+import com.fengchaoit.dto.order.TrainPriceDto;
 import com.fengchaoit.entity.Data;
 import com.fengchaoit.entity.Order;
 import com.fengchaoit.entity.PrimaryOrder;
@@ -30,17 +33,23 @@ import com.fengchaoit.webclient.btrip.AliBtripAccountHolder;
 import com.fengchaoit.webclient.btrip.AliBtripApi;
 import com.fengchaoit.webclient.btrip.model.order.OrderResult;
 import com.fengchaoit.webclient.btrip.param.order.OrderListQueryParam;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
+import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.time.LocalTime;
+import java.time.temporal.TemporalAdjusters;
+import java.util.*;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 /**
@@ -55,12 +64,10 @@ import java.util.function.Function;
 @RequestMapping("/plugin/connector")
 public class PluginController {
     private final AliBtripApi aliBtripApi;
-    private final AliBtripProperties aliBtripProperties;
     private final StringRedisTemplate stringRedisTemplate;
 
-    public PluginController(AliBtripApi aliBtripApi, AliBtripProperties aliBtripProperties, StringRedisTemplate stringRedisTemplate) {
+    public PluginController(AliBtripApi aliBtripApi, StringRedisTemplate stringRedisTemplate) {
         this.aliBtripApi = aliBtripApi;
-        this.aliBtripProperties = aliBtripProperties;
         this.stringRedisTemplate = stringRedisTemplate;
     }
 
@@ -99,7 +106,7 @@ public class PluginController {
      */
     @PostMapping(value = "/table_meta")
     public Result tableMeta(@RequestBody TableMetaParam param) {
-        return process(param, (RecordHandler) (category, type, startTime, corpName, pageToken, pageSize) -> {
+        return process(param, (RecordHandler) (category, type, startTime, appKey, corpName, pageToken, pageSize) -> {
             if (category == Constant.FEISHU_BILL) {
                 return switch (type) {
                     case 1 -> {
@@ -160,75 +167,73 @@ public class PluginController {
      */
     @PostMapping("/records")
     public Result records(@RequestBody TableMetaParam param) {
-        return process(param, (RecordHandler) (category, type, startTime, corpName, pageToken, pageSize) -> {
+        return process(param, (RecordHandler) (category, type, startTime, appKey, corpName, pageToken, pageSize) -> {
             int page = NumberUtils.toInt(pageToken, 1);
 
-            // api获取数据
             if (category == Constant.FEISHU_BILL) { // 账单
-                LocalDateTime endTime = startTime.plusDays(1);
-                com.fengchaoit.webclient.btrip.model.bill.BillSettlement<?> billSettlement;
+                LocalDateTime endTime;
+                List<Field> fields;
+                List<PrimaryKey> items;
                 TableData.Builder tableDataBuilder = TableData.create().hasMore(false);
+                String md5Key = DigestUtils.md5Hex(category + ":" + appKey + ":" + type);
+                LocalDateTime targetDate = startTime.with(TemporalAdjusters.lastDayOfMonth()).with(LocalTime.MAX);
+                if (targetDate.isAfter(LocalDateTime.now().minusHours(2))) {
+                    targetDate = LocalDateTime.now().minusHours(2);
+                }
+                startTime = stringRedisTemplate.opsForValue().get(md5Key) == null ? startTime : LocalDateTime.parse(Objects.requireNonNull(stringRedisTemplate.opsForValue().get(md5Key)));
+                endTime = startTime.plusDays(1);
+                endTime = endTime.isAfter(LocalDateTime.now().minusHours(2)) ? LocalDateTime.now().minusHours(2) : endTime;
+
+                System.out.println("startTime = " + startTime);
+                System.out.println("endTime = " + endTime);
+                com.fengchaoit.webclient.btrip.model.bill.BillSettlement<?> billSettlement;
+                page = 1;
                 switch (type) {
                     case 1 -> {
                         billSettlement = billSettlementQuery(aliBtripApi::flightBillSettlement,
                                 startTime, endTime, page, pageSize, "机票");
-                        boolean hasMore = billSettlement.getTotalNum() > (long) pageSize * page;
-                        if (hasMore) {
-                            tableDataBuilder.hasMore(true).nextPageToken(String.valueOf(page + 1));
-                        }
                         List<com.fengchaoit.webclient.btrip.model.bill.FlightBillSettlementRecord> records = (List<com.fengchaoit.webclient.btrip.model.bill.FlightBillSettlementRecord>) billSettlement.getRecords();
                         List<FlightBillSettlement> dwbgBills = records.stream().map(FlightBillConvert.INSTANCE::convertBtripBillToDwbgBill).toList();
-                        List<Field> fields = processTableMeta(FlightBillSettlement.class);
-                        List<PrimaryKey> items = dwbgBills.stream().map(it -> (PrimaryKey) it).toList();
-                        TableData tableData = processRecordToData(tableDataBuilder, fields, items, category, type);
-                        return Result.success().data(tableData).build();
+                        fields = processTableMeta(FlightBillSettlement.class);
+                        items = dwbgBills.stream().map(it -> (PrimaryKey) it).toList();
                     }
                     case 2 -> {
                         billSettlement = billSettlementQuery(aliBtripApi::hotelBillSettlement,
                                 startTime, endTime, page, pageSize, "酒店");
-                        boolean hasMore = billSettlement.getTotalNum() > (long) pageSize * page;
-                        if (hasMore) {
-                            tableDataBuilder.hasMore(true).nextPageToken(String.valueOf(page + 1));
-                        }
                         List<com.fengchaoit.webclient.btrip.model.bill.HotelBillSettlementRecord> records = (List<com.fengchaoit.webclient.btrip.model.bill.HotelBillSettlementRecord>) billSettlement.getRecords();
                         List<HotelBillSettlement> dwbgBills = records.stream().map(HotelBillConvert.INSTANCE::convertBtripBillToDwbgBill).toList();
-                        List<Field> fields = processTableMeta(HotelBillSettlement.class);
-                        List<PrimaryKey> items = dwbgBills.stream().map(it -> (PrimaryKey) it).toList();
-                        TableData tableData = processRecordToData(tableDataBuilder, fields, items, category, type);
-                        return Result.success().data(tableData).build();
+                        fields = processTableMeta(HotelBillSettlement.class);
+                        items = dwbgBills.stream().map(it -> (PrimaryKey) it).toList();
                     }
                     case 3 -> {
                         billSettlement = billSettlementQuery(aliBtripApi::trainBillSettlement,
                                 startTime, endTime, page, pageSize, "火车");
-                        boolean hasMore = billSettlement.getTotalNum() > (long) pageSize * page;
-                        if (hasMore) {
-                            tableDataBuilder.hasMore(true).nextPageToken(String.valueOf(page + 1));
-                        }
                         List<com.fengchaoit.webclient.btrip.model.bill.TrainBillSettlementRecord> records = (List<com.fengchaoit.webclient.btrip.model.bill.TrainBillSettlementRecord>) billSettlement.getRecords();
                         List<TrainBillSettlement> dwbgBills = records.stream().map(TrainBillConvert.INSTANCE::convertBtripBillToDwbgBill).toList();
-                        List<Field> fields = processTableMeta(TrainBillSettlement.class);
-                        List<PrimaryKey> items = dwbgBills.stream().map(it -> (PrimaryKey) it).toList();
-                        TableData tableData = processRecordToData(tableDataBuilder, fields, items, category, type);
-                        return Result.success().data(tableData).build();
+                        fields = processTableMeta(TrainBillSettlement.class);
+                        items = dwbgBills.stream().map(it -> (PrimaryKey) it).toList();
                     }
                     case 4 -> {
                         billSettlement = billSettlementQuery(aliBtripApi::carBillSettlement,
                                 startTime, endTime, page, pageSize, "用车");
-                        boolean hasMore = billSettlement.getTotalNum() > (long) pageSize * page;
-                        if (hasMore) {
-                            tableDataBuilder.hasMore(true).nextPageToken(String.valueOf(page + 1));
-                        }
                         List<com.fengchaoit.webclient.btrip.model.bill.CarBillSettlementRecord> records = (List<com.fengchaoit.webclient.btrip.model.bill.CarBillSettlementRecord>) billSettlement.getRecords();
                         List<CarBillSettlement> dwbgBills = records.stream().map(CarBillConvert.INSTANCE::convertBtripBillToDwbgBill).toList();
-                        List<Field> fields = processTableMeta(CarBillSettlement.class);
-                        List<PrimaryKey> items = dwbgBills.stream().map(it -> (PrimaryKey) it).toList();
-                        TableData tableData = processRecordToData(tableDataBuilder, fields, items, category, type);
-                        return Result.success().data(tableData).build();
+                        fields = processTableMeta(CarBillSettlement.class);
+                        items = dwbgBills.stream().map(it -> (PrimaryKey) it).toList();
                     }
                     default -> {
                         return Result.fail("未找到对应类型").build();
                     }
                 }
+                if (endTime.plus(Duration.ofSeconds(86399)).isAfter(targetDate)) {
+                    stringRedisTemplate.delete(md5Key);
+                    tableDataBuilder.hasMore(false);
+                } else {
+                    stringRedisTemplate.opsForValue().set(md5Key, String.valueOf(endTime));
+                    tableDataBuilder.hasMore(true).nextPageToken(String.valueOf(page + 1));
+                }
+                TableData tableData = processRecordToData(tableDataBuilder, fields, items, category, type);
+                return Result.success().data(tableData).build();
             } else { // 订单
                 LocalDateTime endTime = LocalDateTime.now();
                 TableData.Builder tableDataBuilder = TableData.create().hasMore(false);
@@ -249,9 +254,20 @@ public class PluginController {
                                 tableDataBuilder.hasMore(true).nextPageToken(String.valueOf(page + 1));
                             }
                         }
+                        List<FlightOrder> dwbgOrders = records.stream().filter(record -> record.getId() != null).map(FlightOrderConvert.INSTANCE::convertBtripOrderToDwbgOrder).toList();
+                        // 循环records取出priceInfoList并赋值给flightPriceDtos
+                        List<FlightPriceDto> flightPriceDtos = new ArrayList<>();
+                        for (com.fengchaoit.webclient.btrip.model.order.FlightOrder record : records) {
+                            List<com.fengchaoit.webclient.btrip.model.order.FlightOrder.PriceInfoListDTO> priceInfoList = record.getPriceInfoList();
+                            for (com.fengchaoit.webclient.btrip.model.order.FlightOrder.PriceInfoListDTO price : priceInfoList) {
+                                FlightPriceDto flightPriceDto = getFlightPriceDto(record, price);
+                                flightPriceDtos.add(flightPriceDto);
+                            }
+                        }
+                        for (FlightOrder dwbgOrder : dwbgOrders) {
+                            setFlightOrderPrice(dwbgOrder, flightPriceDtos);
+                        }
 
-                        // 列表类型转换
-                        List<FlightOrder> dwbgOrders = records.stream().map(FlightOrderConvert.INSTANCE::convertBtripOrderToDwbgOrder).toList();
                         List<Field> fields = processTableMeta(dwbgOrders.get(0).getClass());
                         List<PrimaryKey> items = dwbgOrders.stream().filter(it -> it.getId() != null).map(it -> (PrimaryKey) it).toList();
                         TableData tableData = processRecordToData(tableDataBuilder, fields, items, category, type);
@@ -274,8 +290,20 @@ public class PluginController {
                             }
                         }
 
-                        // 列表类型转换
-                        List<HotelOrder> dwbgOrders = records.stream().map(HotelOrderConvert.INSTANCE::convertBtripOrderToDwbgOrder).toList();
+                        List<HotelOrder> dwbgOrders = records.stream().filter(record -> record.getId() != null).map(HotelOrderConvert.INSTANCE::convertBtripOrderToDwbgOrder).toList();
+
+                        List<HotelPriceDto> hotelPriceDtos = new ArrayList<>();
+                        for (com.fengchaoit.webclient.btrip.model.order.HotelOrder record : records) {
+                            List<com.fengchaoit.webclient.btrip.model.order.HotelOrder.PriceInfoListDTO> priceInfoList = record.getPriceInfoList();
+                            for (com.fengchaoit.webclient.btrip.model.order.HotelOrder.PriceInfoListDTO price : priceInfoList) {
+                                HotelPriceDto hotelPriceDto = getHotelPriceDto(record, price);
+                                hotelPriceDtos.add(hotelPriceDto);
+                            }
+                        }
+                        for (HotelOrder dwbgOrder : dwbgOrders) {
+                            setHotelOrderPrice(dwbgOrder, hotelPriceDtos);
+                        }
+
                         List<Field> fields = processTableMeta(dwbgOrders.get(0).getClass());
                         List<PrimaryKey> items = dwbgOrders.stream().filter(it -> it.getId() != null).map(it -> (PrimaryKey) it).toList();
                         TableData tableData = processRecordToData(tableDataBuilder, fields, items, category, type);
@@ -297,9 +325,18 @@ public class PluginController {
                                 tableDataBuilder.hasMore(true).nextPageToken(String.valueOf(page + 1));
                             }
                         }
-
-                        // 列表类型转换
-                        List<TrainOrder> dwbgOrders = records.stream().map(TrainOrderConvert.INSTANCE::convertBtripOrderToDwbgOrder).toList();
+                        List<TrainOrder> dwbgOrders = records.stream().filter(record -> record.getId() != null).map(TrainOrderConvert.INSTANCE::convertBtripOrderToDwbgOrder).toList();
+                        List<TrainPriceDto> trainPriceDtos = new ArrayList<>();
+                        for (com.fengchaoit.webclient.btrip.model.order.TrainOrder record : records) {
+                            List<com.fengchaoit.webclient.btrip.model.order.TrainOrder.PriceInfoListDTO> priceInfoList = record.getPriceInfoList();
+                            for (com.fengchaoit.webclient.btrip.model.order.TrainOrder.PriceInfoListDTO price : priceInfoList) {
+                                TrainPriceDto trainPriceDto = getTrainPriceDto(record, price);
+                                trainPriceDtos.add(trainPriceDto);
+                            }
+                        }
+                        for (TrainOrder dwbgOrder : dwbgOrders) {
+                            setTrainOrderPrice(dwbgOrder, trainPriceDtos);
+                        }
                         List<Field> fields = processTableMeta(dwbgOrders.get(0).getClass());
                         List<PrimaryKey> items = dwbgOrders.stream().filter(it -> it.getId() != null).map(it -> (PrimaryKey) it).toList();
                         TableData tableData = processRecordToData(tableDataBuilder, fields, items, category, type);
@@ -321,11 +358,26 @@ public class PluginController {
                                 tableDataBuilder.hasMore(true).nextPageToken(String.valueOf(page + 1));
                             }
                         }
-
-                        // 列表类型转换
-                        List<CarOrder> dwbgOrders = records.stream().map(CarOrderConvert.INSTANCE::convertBtripOrderToDwbgOrder).toList();
+                        List<CarOrder> dwbgOrders = records.stream().filter(record -> record.getId() != null).map(CarOrderConvert.INSTANCE::convertBtripOrderToDwbgOrder).toList();
+                        List<CarPriceDto> carPriceDtos = new ArrayList<>();
+                        for (com.fengchaoit.webclient.btrip.model.order.CarOrder record : records) {
+                            if (record.getId() == null) {
+                                continue;
+                            }
+                            List<com.fengchaoit.webclient.btrip.model.order.CarOrder.PriceInfoListDTO> priceInfoList = record.getPriceInfoList();
+                            if (priceInfoList == null || priceInfoList.isEmpty()) {
+                                continue;
+                            }
+                            for (com.fengchaoit.webclient.btrip.model.order.CarOrder.PriceInfoListDTO price : priceInfoList) {
+                                CarPriceDto carPriceDto = getCarPriceDto(record, price);
+                                carPriceDtos.add(carPriceDto);
+                            }
+                        }
+                        for (CarOrder dwbgOrder : dwbgOrders) {
+                            setCarOrderPrice(dwbgOrder, carPriceDtos);
+                        }
                         List<Field> fields = processTableMeta(dwbgOrders.get(0).getClass());
-                        List<PrimaryKey> items = dwbgOrders.stream().filter(it -> it.getId() != null).map(it -> (PrimaryKey) it).toList();
+                        List<PrimaryKey> items = dwbgOrders.stream().map(it -> (PrimaryKey) it).toList();
                         TableData tableData = processRecordToData(tableDataBuilder, fields, items, category, type);
                         return Result.success().data(tableData).build();
                     }
@@ -406,7 +458,7 @@ public class PluginController {
         LocalDateTime startTime = LocalDateTime.parse(startTimeStr + "T00:00:00", java.time.format.DateTimeFormatter.ISO_LOCAL_DATE_TIME);
         if (handler instanceof RecordHandler recordHandler) {
             AliBtripAccountHolder.setAccount(appKey, appSecret, corpId);
-            return recordHandler.handle(category, type, startTime, corpName, pageToken, pageSize);
+            return recordHandler.handle(category, type, startTime, appKey, corpName, pageToken, pageSize);
         } else {
             return handler.MetaHandle(type);
         }
@@ -464,10 +516,10 @@ public class PluginController {
                     ReflectionUtils.makeAccessible(f);
                     Object value = ReflectionUtils.getField(f, item);
 
-                    Object enumValue = getItem(category, type, f, item, value);
                     if (value != null) {
-                        value = enumValue;
+                        value = getItem(category, type, f, item, value);
                     }
+
                     record.append(field.getId(), value);
                 }
             });
@@ -503,7 +555,6 @@ public class PluginController {
                     return SettlementRecord.EnumUtils.getDescription(SettlementRecord.VoucherTypeEnum.class, (int) value);
                 }
             }
-
         } else {
             if ("tripType".equals(f.getName()) && item instanceof FlightOrder && value != null) {
                 return com.fengchaoit.component.alibtrip.model.order.Order.EnumUtils.getDescription(com.fengchaoit.component.alibtrip.model.order.Order.FlightTripTypeEnum.class, (int) value);
@@ -518,7 +569,7 @@ public class PluginController {
             } else if ("orderStatus".equals(f.getName()) && item instanceof CarOrder) {
                 return com.fengchaoit.component.alibtrip.model.order.Order.EnumUtils.getDescription(com.fengchaoit.component.alibtrip.model.order.Order.CarStatusEnum.class, (int) value);
             } else if ("carLevel".equals(f.getName()) && item instanceof CarOrder) {
-                return com.fengchaoit.component.alibtrip.model.order.Order.EnumUtils.getDescription(com.fengchaoit.component.alibtrip.model.order.Order.CarLevelEnum.class, (int) value);
+//                return com.fengchaoit.component.alibtrip.model.order.Order.EnumUtils.getDescription(com.fengchaoit.component.alibtrip.model.order.Order.CarLevelEnum.class, (int) value);
             } else if ("serviceType".equals(f.getName()) && item instanceof CarOrder) {
                 return com.fengchaoit.component.alibtrip.model.order.Order.EnumUtils.getDescription(com.fengchaoit.component.alibtrip.model.order.Order.CarServiceTypeEnum.class, (int) value);
             } else if ("businessCategory".equals(f.getName()) && item instanceof CarOrder) {
@@ -532,6 +583,209 @@ public class PluginController {
         return value;
     }
 
+    /**
+     * 获取机票价格信息
+     *
+     * @param record 订单
+     * @param price  价格信息
+     * @return 机票价格dto
+     */
+    private static FlightPriceDto getFlightPriceDto(com.fengchaoit.webclient.btrip.model.order.FlightOrder record, com.fengchaoit.webclient.btrip.model.order.FlightOrder.PriceInfoListDTO price) {
+        BigDecimal price1 = price.getPrice();
+        Integer type1 = price.getType();
+        Integer categoryCode = price.getCategoryCode();
+        FlightPriceDto flightPriceDto = new FlightPriceDto();
+        flightPriceDto.setId(record.getId());
+        flightPriceDto.setType(type1);
+        flightPriceDto.setCategoryCode(categoryCode);
+        flightPriceDto.setPrice(price1);
+        flightPriceDto.setPayType(price.getPayType());
+        return flightPriceDto;
+    }
+
+    /**
+     * 获取酒店价格信息
+     *
+     * @param record 订单
+     * @param price  价格信息
+     * @return 机票价格dto
+     */
+    private static HotelPriceDto getHotelPriceDto(com.fengchaoit.webclient.btrip.model.order.HotelOrder record, com.fengchaoit.webclient.btrip.model.order.HotelOrder.PriceInfoListDTO price) {
+        BigDecimal price1 = price.getPrice();
+        Integer type1 = price.getType();
+        Integer categoryCode = price.getCategoryCode();
+        HotelPriceDto hotelPriceDto = new HotelPriceDto();
+        hotelPriceDto.setId(record.getId());
+        hotelPriceDto.setType(type1);
+        hotelPriceDto.setCategoryCode(categoryCode);
+        hotelPriceDto.setPrice(price1);
+        hotelPriceDto.setPayType(price.getPayType());
+        return hotelPriceDto;
+    }
+
+    /**
+     * 获取火车价格信息
+     *
+     * @param record 订单
+     * @param price  价格信息
+     * @return 机票价格dto
+     */
+    private static TrainPriceDto getTrainPriceDto(com.fengchaoit.webclient.btrip.model.order.TrainOrder record, com.fengchaoit.webclient.btrip.model.order.TrainOrder.PriceInfoListDTO price) {
+        BigDecimal price1 = price.getPrice();
+        Integer type1 = price.getType();
+        Integer categoryCode = price.getCategoryCode();
+        TrainPriceDto trainPriceDto = new TrainPriceDto();
+        trainPriceDto.setId(record.getId());
+        trainPriceDto.setType(type1);
+        trainPriceDto.setCategoryCode(categoryCode);
+        trainPriceDto.setPrice(price1);
+        trainPriceDto.setPayType(price.getPayType());
+        return trainPriceDto;
+    }
+
+    /**
+     * 获取火车价格信息
+     *
+     * @param record 订单
+     * @param price  价格信息
+     * @return 机票价格dto
+     */
+    private static CarPriceDto getCarPriceDto(com.fengchaoit.webclient.btrip.model.order.CarOrder record, com.fengchaoit.webclient.btrip.model.order.CarOrder.PriceInfoListDTO price) {
+        BigDecimal price1 = price.getPrice();
+        Integer type1 = price.getType();
+        Integer categoryCode = price.getCategoryCode();
+        CarPriceDto carPriceDto = new CarPriceDto();
+        carPriceDto.setId(record.getId());
+        carPriceDto.setType(type1);
+        carPriceDto.setCategoryCode(categoryCode);
+        carPriceDto.setPrice(price1);
+        carPriceDto.setPayType(price.getPayType());
+        return carPriceDto;
+    }
+
+    /**
+     * 设置订单价格
+     *
+     * @param dwbgOrder       订单
+     * @param flightPriceDtos 价格信息列表
+     */
+    private static void setFlightOrderPrice(FlightOrder dwbgOrder, List<FlightPriceDto> flightPriceDtos) {
+        for (FlightPriceDto flightPriceDto1 : flightPriceDtos) {
+            // 转为long
+            Long orderId = Long.valueOf(dwbgOrder.getId());
+            if (flightPriceDto1.getId().equals(orderId)) {
+                setSingleFlightOrderPrice(dwbgOrder, flightPriceDto1);
+            }
+        }
+    }
+
+    /**
+     * 设置订单价格
+     *
+     * @param dwbgOrder      订单
+     * @param flightPriceDto 价格信息
+     */
+    private static void setSingleFlightOrderPrice(FlightOrder dwbgOrder, FlightPriceDto flightPriceDto) {
+        BiConsumer<FlightOrder, FlightPriceDto> handler = FlightOrderPriceUtil.categoryHandlers.get(flightPriceDto.getCategoryCode());
+        if (handler != null) {
+            handler.accept(dwbgOrder, flightPriceDto);
+        } else {
+            log.warn("未找到对应交易类目编码");
+        }
+    }
+
+    /**
+     * 设置订单价格
+     *
+     * @param dwbgOrder      订单
+     * @param hotelPriceDtos 价格信息列表
+     */
+    private static void setHotelOrderPrice(HotelOrder dwbgOrder, List<HotelPriceDto> hotelPriceDtos) {
+        for (HotelPriceDto hotelPriceDto : hotelPriceDtos) {
+            // 转为long
+            Long orderId = Long.valueOf(dwbgOrder.getId());
+            if (hotelPriceDto.getId().equals(orderId)) {
+                setSingleHotelOrderPrice(dwbgOrder, hotelPriceDto);
+            }
+        }
+    }
+
+    /**
+     * 设置订单价格
+     *
+     * @param order         订单
+     * @param hotelPriceDto 价格信息
+     */
+    private static void setSingleHotelOrderPrice(HotelOrder order, HotelPriceDto hotelPriceDto) {
+        BiConsumer<HotelOrder, HotelPriceDto> handle = HotelOrderPriceUtil.categoryHandlers.get(hotelPriceDto.getCategoryCode());
+        if (handle != null) {
+            handle.accept(order, hotelPriceDto);
+        } else {
+            log.warn("未找到对应交易类目编码");
+        }
+    }
+
+    /**
+     * 设置订单价格
+     *
+     * @param dwbgOrder      订单
+     * @param trainPriceDtos 价格信息列表
+     */
+    private static void setTrainOrderPrice(TrainOrder dwbgOrder, List<TrainPriceDto> trainPriceDtos) {
+        for (TrainPriceDto trainPriceDto : trainPriceDtos) {
+            // 转为long
+            Long orderId = Long.valueOf(dwbgOrder.getId());
+            if (trainPriceDto.getId().equals(orderId)) {
+                setSingleTrainOrderPrice(dwbgOrder, trainPriceDto);
+            }
+        }
+    }
+
+    /**
+     * 设置订单价格
+     *
+     * @param order         订单
+     * @param trainPriceDto 价格信息
+     */
+    private static void setSingleTrainOrderPrice(TrainOrder order, TrainPriceDto trainPriceDto) {
+        BiConsumer<TrainOrder, TrainPriceDto> handle = TrainOrderPriceUtil.categoryHandlers.get(trainPriceDto.getCategoryCode());
+        if (handle != null) {
+            handle.accept(order, trainPriceDto);
+        } else {
+            log.warn("未找到对应交易类目编码");
+        }
+    }
+
+    /**
+     * 设置订单价格
+     *
+     * @param dwbgOrder    订单
+     * @param carPriceDtos 价格信息列表
+     */
+    private static void setCarOrderPrice(CarOrder dwbgOrder, List<CarPriceDto> carPriceDtos) {
+        for (CarPriceDto carPriceDto : carPriceDtos) {
+            // 转为long
+            Long orderId = Long.valueOf(dwbgOrder.getId());
+            if (carPriceDto.getId().equals(orderId)) {
+                setSingleCarOrderPrice(dwbgOrder, carPriceDto);
+            }
+        }
+    }
+
+    /**
+     * 设置订单价格
+     *
+     * @param order       订单
+     * @param carPriceDto 价格信息
+     */
+    private static void setSingleCarOrderPrice(CarOrder order, CarPriceDto carPriceDto) {
+        BiConsumer<CarOrder, CarPriceDto> handle = CarOrderPriceUtil.categoryHandlers.get(carPriceDto.getCategoryCode());
+        if (handle != null) {
+            handle.accept(order, carPriceDto);
+        } else {
+            log.warn("未找到对应交易类目编码");
+        }
+    }
 
     /**
      * 预数据处理
@@ -541,7 +795,6 @@ public class PluginController {
          * 处理器
          *
          * @param type 1-机票 2-酒店 3-火车 4-用车
-         * @return
          */
         default Result MetaHandle(int type) {
             return Result.fail("方法未实现").build();
@@ -558,12 +811,13 @@ public class PluginController {
          * @param category  1-账单 2-订单
          * @param type      1-机票 2-酒店 3-火车 4-用车
          * @param startTime 开始时间
+         * @param appKey    appKey
          * @param corpName  企业名称
          * @param pageToken 分页参数
          * @param pageSize  每页显示条数
          * @return 结果集
          */
-        Result handle(int category, int type, LocalDateTime startTime, String corpName, String pageToken, int pageSize);
+        Result handle(int category, int type, LocalDateTime startTime, String appKey, String corpName, String pageToken, int pageSize);
     }
 
     /**
@@ -578,11 +832,11 @@ public class PluginController {
      * @return 账单
      */
     private <T extends com.fengchaoit.webclient.btrip.model.bill.SettlementRecord> com.fengchaoit.webclient.btrip.model.bill.BillSettlement<T> billSettlementQuery(Function<BillSettlementParam, com.fengchaoit.webclient.Result<com.fengchaoit.webclient.btrip.model.bill.BillSettlement<T>>> func,
-                                                                                                                                                                    LocalDateTime startTime,
-                                                                                                                                                                    LocalDateTime endTime,
-                                                                                                                                                                    int pageNo,
-                                                                                                                                                                    int pageSize,
-                                                                                                                                                                    String desc) {
+                                                                                                                                                                   LocalDateTime startTime,
+                                                                                                                                                                   LocalDateTime endTime,
+                                                                                                                                                                   int pageNo,
+                                                                                                                                                                   int pageSize,
+                                                                                                                                                                   String desc) {
         BillSettlementParam billSettlementParam = BillSettlementParam.builder()
                 .periodStart(DateTimeFormatter.dateTimeToString(startTime))
                 .periodEnd(DateTimeFormatter.dateTimeToString(endTime))
@@ -631,5 +885,160 @@ public class PluginController {
         throw new BusinessException("获取" + desc + "订单异常， 响应编码为：" + result.getCode() + "，响应消息为：" + result.getMessage());
     }
 
+    /**
+     * 机票价格转换工具
+     */
+    public static class FlightOrderPriceUtil {
+
+        // 定义一个接口来处理不同的 CategoryCode
+        private static final Map<Integer, BiConsumer<FlightOrder, FlightPriceDto>> categoryHandlers = new HashMap<>();
+
+        static {
+            categoryHandlers.put(1, (dwbgOrder, flightPriceDto) -> setPrice(dwbgOrder::setBook, dwbgOrder::setBookPayType, flightPriceDto));
+            categoryHandlers.put(2, (dwbgOrder, flightPriceDto) -> setPrice(dwbgOrder::setChange, dwbgOrder::setChangePayType, flightPriceDto));
+            categoryHandlers.put(3, (dwbgOrder, flightPriceDto) -> setPrice(dwbgOrder::setInsurance, dwbgOrder::setInsurancePayType, flightPriceDto));
+            categoryHandlers.put(4, (dwbgOrder, flightPriceDto) -> setPrice(dwbgOrder::setItineraryPostage, dwbgOrder::setItineraryPostagePayType, flightPriceDto));
+            categoryHandlers.put(5, (dwbgOrder, flightPriceDto) -> setPrice(dwbgOrder::setTicketOrderServiceFee, dwbgOrder::setTicketOrderServiceFeePayType, flightPriceDto));
+            categoryHandlers.put(6, (dwbgOrder, flightPriceDto) -> setPrice(dwbgOrder::setTicketRefundFee, dwbgOrder::setTicketRefundFeePayType, flightPriceDto));
+            categoryHandlers.put(99, (dwbgOrder, flightPriceDto) -> setPrice(dwbgOrder::setTicketAdjustmentDeduction, dwbgOrder::setTicketAdjustmentDeductionPayType, flightPriceDto));
+            categoryHandlers.put(101, (dwbgOrder, flightPriceDto) -> setPrice(dwbgOrder::setBookingRefund, dwbgOrder::setBookingRefundPayType, flightPriceDto));
+            categoryHandlers.put(102, (dwbgOrder, flightPriceDto) -> setPrice(dwbgOrder::setChangeRefund, dwbgOrder::setChangeRefundPayType, flightPriceDto));
+            categoryHandlers.put(103, (dwbgOrder, flightPriceDto) -> setPrice(dwbgOrder::setInsuranceRefund, dwbgOrder::setInsuranceRefundPayType, flightPriceDto));
+            categoryHandlers.put(104, (dwbgOrder, flightPriceDto) -> setPrice(dwbgOrder::setItineraryPostageRefund, dwbgOrder::setItineraryPostageRefundPayType, flightPriceDto));
+            categoryHandlers.put(105, (dwbgOrder, flightPriceDto) -> setPrice(dwbgOrder::setTicketCompensation, dwbgOrder::setTicketCompensationPayType, flightPriceDto));
+            categoryHandlers.put(106, (dwbgOrder, flightPriceDto) -> setPrice(dwbgOrder::setTicketChangeOrderServiceFee, dwbgOrder::setTicketChangeOrderServiceFeePayType, flightPriceDto));
+            categoryHandlers.put(107, (dwbgOrder, flightPriceDto) -> setPrice(dwbgOrder::setTicketServiceFeeRefund, dwbgOrder::setTicketServiceFeeRefundPayType, flightPriceDto));
+        }
+
+        // 通用处理方法
+        private static void setPrice(Consumer<BigDecimal> setPrice, Consumer<String> setPayType, FlightPriceDto flightPriceDto) {
+            BigDecimal price = flightPriceDto.getPrice() != null ? flightPriceDto.getPrice() : BigDecimal.ZERO; // 处理getPrice为null的情况
+            if (flightPriceDto.getType() == 1) {
+                setPrice.accept(price);
+            } else {
+                setPrice.accept(price.negate());
+            }
+            OrderPayType payType = OrderPayType.fromCode(flightPriceDto.getPayType());
+            setPayType.accept(payType.getDescription());
+        }
+    }
+
+    /**
+     * 酒店价格转换工具
+     */
+    public static class HotelOrderPriceUtil {
+        private static final Map<Integer, BiConsumer<HotelOrder, HotelPriceDto>> categoryHandlers = new HashMap<>();
+
+        static {
+            categoryHandlers.put(1, (dwbgOrder, hotelPriceDto) -> setPrice(dwbgOrder::setBook, dwbgOrder::setBookPayType, hotelPriceDto));
+            categoryHandlers.put(2, (dwbgOrder, hotelPriceDto) -> setPrice(dwbgOrder::setServiceFee, dwbgOrder::setServiceFeePayType, hotelPriceDto));
+            categoryHandlers.put(99, (dwbgOrder, hotelPriceDto) -> setPrice(dwbgOrder::setAdjustment, dwbgOrder::setAdjustmentPayType, hotelPriceDto));
+            categoryHandlers.put(101, (dwbgOrder, hotelPriceDto) -> setPrice(dwbgOrder::setRefund, dwbgOrder::setRefundPayType, hotelPriceDto));
+            categoryHandlers.put(102, (dwbgOrder, hotelPriceDto) -> setPrice(dwbgOrder::setCompensation, dwbgOrder::setCompensationPayType, hotelPriceDto));
+            categoryHandlers.put(110, (dwbgOrder, hotelPriceDto) -> setPrice(dwbgOrder::setFudouDeduction, dwbgOrder::setFudouDeductionPayType, hotelPriceDto));
+            categoryHandlers.put(111, (dwbgOrder, hotelPriceDto) -> setPrice(dwbgOrder::setFudouRefund, dwbgOrder::setFudouRefundPayType, hotelPriceDto));
+        }
+
+        // 通用处理方法
+        private static void setPrice(Consumer<BigDecimal> setPrice, Consumer<String> setPayType, HotelPriceDto hotelPriceDto) {
+            BigDecimal price = hotelPriceDto.getPrice() != null ? hotelPriceDto.getPrice() : BigDecimal.ZERO; // 处理getPrice为null的情况
+            if (hotelPriceDto.getType() == 1) {
+                setPrice.accept(price);
+            } else {
+                setPrice.accept(price.negate());
+            }
+            OrderPayType payType = OrderPayType.fromCode(hotelPriceDto.getPayType());
+            setPayType.accept(payType.getDescription());
+        }
+    }
+
+    /**
+     * 火车价格转换工具
+     */
+    public static class TrainOrderPriceUtil {
+        private static final Map<Integer, BiConsumer<TrainOrder, TrainPriceDto>> categoryHandlers = new HashMap<>();
+
+        static {
+            categoryHandlers.put(1, (dwbgOrder, trainPriceDto) -> setPrice(dwbgOrder::setBook, dwbgOrder::setBookPayType, trainPriceDto));
+            categoryHandlers.put(2, (dwbgOrder, trainPriceDto) -> setPrice(dwbgOrder::setRefund, dwbgOrder::setRefundPayType, trainPriceDto));
+            categoryHandlers.put(3, (dwbgOrder, trainPriceDto) -> setPrice(dwbgOrder::setChange, dwbgOrder::setChangePayType, trainPriceDto));
+            categoryHandlers.put(4, (dwbgOrder, trainPriceDto) -> setPrice(dwbgOrder::setDiffRefund, dwbgOrder::setDiffRefundPayType, trainPriceDto));
+            categoryHandlers.put(5, (dwbgOrder, trainPriceDto) -> setPrice(dwbgOrder::setChangeServiceFee, dwbgOrder::setChangeServiceFeePayType, trainPriceDto));
+            categoryHandlers.put(6, (dwbgOrder, trainPriceDto) -> setPrice(dwbgOrder::setOfflineRefund, dwbgOrder::setOfflineRefundPayType, trainPriceDto));
+            categoryHandlers.put(7, (dwbgOrder, trainPriceDto) -> setPrice(dwbgOrder::setServiceFee, dwbgOrder::setServiceFeePayType, trainPriceDto));
+            categoryHandlers.put(8, (dwbgOrder, trainPriceDto) -> setPrice(dwbgOrder::setCompensation, dwbgOrder::setCompensationPayType, trainPriceDto));
+            categoryHandlers.put(9, (dwbgOrder, trainPriceDto) -> setPrice(dwbgOrder::setChangeServiceFee, dwbgOrder::setChangeServiceFeePayType, trainPriceDto));
+            categoryHandlers.put(10, (dwbgOrder, trainPriceDto) -> setPrice(dwbgOrder::setTicketFailRefund, dwbgOrder::setTicketFailRefundPayType, trainPriceDto));
+            categoryHandlers.put(11, (dwbgOrder, trainPriceDto) -> setPrice(dwbgOrder::setServiceFeeRefund, dwbgOrder::setServiceFeeRefundPayType, trainPriceDto));
+            categoryHandlers.put(99, (dwbgOrder, trainPriceDto) -> setPrice(dwbgOrder::setReversal, dwbgOrder::setReversalPayType, trainPriceDto));
+        }
+
+        // 通用处理方法
+        private static void setPrice(Consumer<BigDecimal> setPrice, Consumer<String> setPayType, TrainPriceDto trainPriceDto) {
+            BigDecimal price = trainPriceDto.getPrice() != null ? trainPriceDto.getPrice() : BigDecimal.ZERO; // 处理getPrice为null的情况
+            if (trainPriceDto.getType() == 1) {
+                setPrice.accept(price);
+            } else {
+                setPrice.accept(price.negate());
+            }
+            OrderPayType payType = OrderPayType.fromCode(trainPriceDto.getPayType());
+            setPayType.accept(payType.getDescription());
+        }
+    }
+
+    /**
+     * 用车价格转换工具
+     */
+    public static class CarOrderPriceUtil {
+        private static final Map<Integer, BiConsumer<CarOrder, CarPriceDto>> categoryHandlers = new HashMap<>();
+
+        static {
+            categoryHandlers.put(1, (dwbgOrder, carPriceDto) -> setPrice(dwbgOrder::setPriceInfo, dwbgOrder::setPrinceInfoPayType, carPriceDto));
+            categoryHandlers.put(2, (dwbgOrder, carPriceDto) -> setPrice(dwbgOrder::setServicePriceInfo, dwbgOrder::setServicePriceInfoPayType, carPriceDto));
+            categoryHandlers.put(3, (dwbgOrder, carPriceDto) -> setPrice(dwbgOrder::setCancelPriceInfo, dwbgOrder::setCancelPriceInfoPayType, carPriceDto));
+            categoryHandlers.put(99, (dwbgOrder, carPriceDto) -> setPrice(dwbgOrder::setAdjustPriceInfo, dwbgOrder::setAdjustPriceInfoPayType, carPriceDto));
+            categoryHandlers.put(101, (dwbgOrder, carPriceDto) -> setPrice(dwbgOrder::setRefundPriceInfo, dwbgOrder::setRefundPriceInfoPayType, carPriceDto));
+            categoryHandlers.put(102, (dwbgOrder, carPriceDto) -> setPrice(dwbgOrder::setCompensationPriceInfo, dwbgOrder::setCompensationPriceInfoPayType, carPriceDto));
+        }
+
+        private static void setPrice(Consumer<BigDecimal> setPrice, Consumer<String> setPayType, CarPriceDto carPriceDto) {
+            BigDecimal price = carPriceDto.getPrice() != null ? carPriceDto.getPrice() : BigDecimal.ZERO; // 处理getPrice为null的情况
+            if (carPriceDto.getType() == 1) {
+                setPrice.accept(price);
+            } else {
+                setPrice.accept(price.negate());
+            }
+            OrderPayType payType = OrderPayType.fromCode(carPriceDto.getPayType());
+            setPayType.accept(payType.getDescription());
+        }
+    }
+
+    /**
+     * 订单支付类型
+     */
+    @Getter
+    public enum OrderPayType {
+        PERSONAL_PAY(1, "个人现付"),
+        COMPANY_PAY(2, "企业现付"),
+        COMPANY_MONTHLY(4, "企业月结"),
+        COMPANY_PREPAID(8, "企业预存");
+
+        private final int code;
+        private final String description;
+
+        OrderPayType(int code, String description) {
+            this.code = code;
+            this.description = description;
+        }
+
+        public static OrderPayType fromCode(int code) {
+            for (OrderPayType type : OrderPayType.values()) {
+                if (type.getCode() == code) {
+                    return type;
+                }
+            }
+            throw new IllegalArgumentException("Invalid pay type code: " + code);
+        }
+    }
 
 }

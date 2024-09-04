@@ -71,16 +71,16 @@ public class TrainOrder extends Order {
     /**
      * 出发时间
      */
-//    @JsonProperty("dep_time")
-//    @TableField(fieldName = "出发时间", description = "出发时间", fieldType = 5)
-//    private String depTime;
-//
-//    /**
-//     * 到达时间
-//     */
-//    @JsonProperty("arr_time")
-//    @TableField(fieldName = "到达时间", description = "到达时间", fieldType = 5)
-//    private String arrTime;
+    @JsonProperty("dep_time")
+    @TableField(fieldName = "出发时间", description = "出发时间")
+    private String depTime;
+
+    /**
+     * 到达时间
+     */
+    @JsonProperty("arr_time")
+    @TableField(fieldName = "到达时间", description = "到达时间")
+    private String arrTime;
 
     /**
      * 车次号
@@ -223,62 +223,110 @@ public class TrainOrder extends Order {
     // 订单价格类目
     // 预订
     @JsonProperty("book")
-    @TableField(fieldName = "预订", description = "预订", fieldType = 8)
+    @TableField(fieldName = "预订", description = "预订", fieldType = 8, order = 30)
     private BigDecimal book;
+
+    @JsonProperty("book_pay_type")
+    @TableField(fieldName = "预订支付方式", description = "预订支付方式", order = 31)
+    private String bookPayType;
 
     // 退票成功
     @JsonProperty("refund")
-    @TableField(fieldName = "退票成功", description = "退票成功", fieldType = 8)
+    @TableField(fieldName = "退票成功", description = "退票成功", fieldType = 8, order = 32)
     private BigDecimal refund;
+
+    @JsonProperty("refund_pay_type")
+    @TableField(fieldName = "退票支付方式", description = "退票支付方式", order = 33)
+    private String refundPayType;
 
     // 改签成功
     @JsonProperty("change")
-    @TableField(fieldName = "改签成功", description = "改签成功", fieldType = 8)
+    @TableField(fieldName = "改签成功", description = "改签成功", fieldType = 8, order = 34)
     private BigDecimal change;
+
+    @JsonProperty("change_pay_type")
+    @TableField(fieldName = "改签支付方式", description = "改签支付方式", order = 35)
+    private String changePayType;
 
     // 差额退款
     @JsonProperty("diff_refund")
-    @TableField(fieldName = "差额退款", description = "差额退款", fieldType = 8)
+    @TableField(fieldName = "差额退款", description = "差额退款", fieldType = 8, order = 36)
     private BigDecimal diffRefund;
+
+    @JsonProperty("diff_refund_pay_type")
+    @TableField(fieldName = "差额退款支付方式", description = "差额退款支付方式", order = 37)
+    private String diffRefundPayType;
 
     // 改签手续费
     @JsonProperty("change_fee")
-    @TableField(fieldName = "改签手续费", description = "改签手续费", fieldType = 8)
+    @TableField(fieldName = "改签手续费", description = "改签手续费", fieldType = 8, order = 38)
     private BigDecimal changeFee;
+
+    @JsonProperty("change_fee_pay_type")
+    @TableField(fieldName = "改签手续费支付方式", description = "改签手续费支付方式", order = 39)
+    private String changeFeePayType;
 
     // 线下退票改签退款
     @JsonProperty("offline_refund")
-    @TableField(fieldName = "线下退票改签退款", description = "线下退票改签退款", fieldType = 8)
+    @TableField(fieldName = "线下退票改签退款", description = "线下退票改签退款", fieldType = 8, order = 40)
     private BigDecimal offlineRefund;
+
+    @JsonProperty("offline_refund_pay_type")
+    @TableField(fieldName = "线下退票改签退款支付方式", description = "线下退票改签退款支付方式", order = 41)
+    private String offlineRefundPayType;
 
     // 火车票服务费
     @JsonProperty("service_fee")
-    @TableField(fieldName = "火车票服务费", description = "火车票服务费", fieldType = 8)
+    @TableField(fieldName = "火车票服务费", description = "火车票服务费", fieldType = 8, order = 42)
     private BigDecimal serviceFee;
+
+    @JsonProperty("service_fee_pay_type")
+    @TableField(fieldName = "火车票服务费支付方式", description = "火车票服务费支付方式", order = 43)
+    private String serviceFeePayType;
 
     // 火车票赔付
     @JsonProperty("compensation")
-    @TableField(fieldName = "火车票赔付", description = "火车票赔付", fieldType = 8)
+    @TableField(fieldName = "火车票赔付", description = "火车票赔付", fieldType = 8, order = 44)
     private BigDecimal compensation;
+
+    @JsonProperty("compensation_pay_type")
+    @TableField(fieldName = "火车票赔付支付方式", description = "火车票赔付支付方式", order = 45)
+    private String compensationPayType;
 
     // 火车票改签服务费
     @JsonProperty("change_service_fee")
-    @TableField(fieldName = "火车票改签服务费", description = "火车票改签服务费", fieldType = 8)
+    @TableField(fieldName = "火车票改签服务费", description = "火车票改签服务费", fieldType = 8, order = 46)
     private BigDecimal changeServiceFee;
+
+    @JsonProperty("change_service_fee_pay_type")
+    @TableField(fieldName = "火车票改签服务费支付方式", description = "火车票改签服务费支付方式", order = 47)
+    private String changeServiceFeePayType;
 
     // 出票失败退款
     @JsonProperty("ticket_fail_refund")
-    @TableField(fieldName = "出票失败退款", description = "出票失败退款", fieldType = 8)
+    @TableField(fieldName = "出票失败退款", description = "出票失败退款", fieldType = 8, order = 48)
     private BigDecimal ticketFailRefund;
+
+    @JsonProperty("ticket_fail_refund_pay_type")
+    @TableField(fieldName = "出票失败退款支付方式", description = "出票失败退款支付方式", order = 49)
+    private String ticketFailRefundPayType;
 
     // 火车票服务费退款
     @JsonProperty("service_fee_refund")
-    @TableField(fieldName = "火车票服务费退款", description = "火车票服务费退款", fieldType = 8)
+    @TableField(fieldName = "火车票服务费退款", description = "火车票服务费退款", fieldType = 8, order = 50)
     private BigDecimal serviceFeeRefund;
+
+    @JsonProperty("service_fee_refund_pay_type")
+    @TableField(fieldName = "火车票服务费退款支付方式", description = "火车票服务费退款支付方式", order = 51)
+    private String serviceFeeRefundPayType;
 
     // 冲正
     @JsonProperty("reversal")
-    @TableField(fieldName = "冲正", description = "冲正", fieldType = 8)
+    @TableField(fieldName = "冲正", description = "冲正", fieldType = 8, order = 52)
     private BigDecimal reversal;
+
+    @JsonProperty("reversal_pay_type")
+    @TableField(fieldName = "冲正支付方式", description = "冲正支付方式", order = 53)
+    private String reversalPayType;
 
 }

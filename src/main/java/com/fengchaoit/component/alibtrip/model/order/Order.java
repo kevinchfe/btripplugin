@@ -32,16 +32,16 @@ public class Order implements PrimaryKey, Serializable {
     /**
      * 订单创建时间
      */
-//    @JsonProperty("gmt_create")
-//    @TableField(fieldName = "订单创建时间", description = "订单创建时间")
-//    private Long gmtCreate;
-//
-//    /**
-//     * 订单修改时间
-//     */
-//    @JsonProperty("gmt_modify")
-//    @TableField(fieldName = "订单修改时间", description = "订单修改时间")
-//    private Long gmtModify;
+    @JsonProperty("gmt_create")
+    @TableField(fieldName = "订单创建时间", description = "订单创建时间")
+    private String gmtCreate;
+
+    /**
+     * 订单修改时间
+     */
+    @JsonProperty("gmt_modify")
+    @TableField(fieldName = "订单修改时间", description = "订单修改时间")
+    private String gmtModify;
 
     /**
      * 商旅企业 id
@@ -305,9 +305,10 @@ public class Order implements PrimaryKey, Serializable {
         DISPATCH_FAIL(3, "派单失败"),
         REFUNDED(4, "已退款"),
         PAID(5, "已支付"),
-        CANCELLED(6, "已取消");
+        CANCELLED(6, "已取消"),
+        UNKNOWN(null, "未知");
 
-        private final int code;
+        private final Integer code;
         private final String description;
         private static final Map<Integer, CarStatusEnum> CODE_MAP = new HashMap<>();
 
@@ -317,7 +318,7 @@ public class Order implements PrimaryKey, Serializable {
             }
         }
 
-        CarStatusEnum(int code, String description) {
+        CarStatusEnum(Integer code, String description) {
             this.code = code;
             this.description = description;
         }
@@ -334,7 +335,9 @@ public class Order implements PrimaryKey, Serializable {
     public enum CarLevelEnum implements Describable {
         ECONOMY(1, "经济型"),
         COMFORT(2, "舒适型"),
-        LUXURY(3, "豪华型");
+        LUXURY(3, "豪华型"),
+        TEST(12524077,"测试"),
+        UNKNOWN(null, "未知");
 
         private final int code;
         private final String description;
@@ -346,7 +349,7 @@ public class Order implements PrimaryKey, Serializable {
             }
         }
 
-        CarLevelEnum(int code, String description) {
+        CarLevelEnum(Integer code, String description) {
             this.code = code;
             this.description = description;
         }
@@ -363,9 +366,10 @@ public class Order implements PrimaryKey, Serializable {
     public enum CarServiceTypeEnum implements Describable {
         TAXI(1, "出租车"),
         PREMIUM(2, "专车"),
-        EXPRESS(3, "快车");
+        EXPRESS(3, "快车"),
+        UNKNOWN(null, "未知");
 
-        private final int code;
+        private final Integer code;
         private final String description;
         private static final Map<Integer, CarServiceTypeEnum> CODE_MAP = new HashMap<>();
 
@@ -375,7 +379,7 @@ public class Order implements PrimaryKey, Serializable {
             }
         }
 
-        CarServiceTypeEnum(int code, String description) {
+        CarServiceTypeEnum(Integer code, String description) {
             this.code = code;
             this.description = description;
         }
@@ -393,7 +397,8 @@ public class Order implements PrimaryKey, Serializable {
         TRAFFIC("TRAFFIC", "市内交通"),
         OTHER("OTHER", "其他"),
         TRAVEL("TRAVEL", "差旅"),
-        WORK("WORK", "加班");
+        WORK("WORK", "加班"),
+        UNKNOWN(null, "未知");
 
         private final String code;
         private final String description;

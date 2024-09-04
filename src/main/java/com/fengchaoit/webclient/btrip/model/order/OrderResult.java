@@ -42,6 +42,7 @@ public class OrderResult<T> {
     /**
      * 分页信息
      */
+    @JsonProperty("page_info")
     private PageInfo pageInfo;
 
     @Data
@@ -51,10 +52,12 @@ public class OrderResult<T> {
         /**
          * 每页大小
          */
+        @JsonProperty("page_size")
         private Integer pageSize;
         /**
          * 总数
          */
+        @JsonProperty("total_number")
         private Integer totalNumber;
     }
 

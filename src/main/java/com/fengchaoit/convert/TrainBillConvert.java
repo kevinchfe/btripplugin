@@ -27,4 +27,18 @@ public interface TrainBillConvert {
         }
         return DateTimeUtils.dateTimeToMilliSecond(value.atStartOfDay());
     }
+
+    // 将字符串2024-08-29T09:51Z转为2024-08-29 09:51
+    default String mapToString(String value) {
+        if (value == null) {
+            return null;
+        }
+        if (value.matches("\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}Z")) {
+            return value.replace("T", " ").replace("Z", "");
+        } else {
+            return value;
+        }
+
+//        return value.replace("T", " ").replace("Z", "");
+    }
 }

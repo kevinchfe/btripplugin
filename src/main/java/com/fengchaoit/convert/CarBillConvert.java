@@ -29,4 +29,11 @@ public interface CarBillConvert {
         }
         return DateTimeUtils.dateTimeToMilliSecond(value.atStartOfDay());
     }
+
+    default String mapToString(String value) {
+        if (value == null) {
+            return null;
+        }
+        return value.replace("T", " ").replace("Z", "");
+    }
 }

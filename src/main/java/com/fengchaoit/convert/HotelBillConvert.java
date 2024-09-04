@@ -42,4 +42,11 @@ public interface HotelBillConvert {
         return DateTimeUtils.dateTimeToMilliSecond(dateTime);
     }
 
+    default String mapToString(String value) {
+        if (value == null) {
+            return null;
+        }
+        return value.replace("T", " ").replace("Z", "");
+    }
+
 }
