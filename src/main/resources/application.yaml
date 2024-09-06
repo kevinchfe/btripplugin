@@ -21,8 +21,8 @@ spring:
       database: ${REDIS_DATABSE}
 webclient:
   alibtrip:
-    app-key: m3unvmt81400
-    app-secret: bTN1bnZtdDgxNDAwPlobXd8Tyt8ZzAoL3tFSFZKZTs
-    corp-id: open12m3unvmt7v47v10IfR_SXM900
+    app-key: ${APP_KEY}
+    app-secret: ${APP_SECRET}
+    corp-id: ${CORP_ID}
 
 
